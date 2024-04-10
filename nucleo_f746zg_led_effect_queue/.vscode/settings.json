@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "cstring": "c",
+        "segger_sysview.h": "c"
+    }
+}
