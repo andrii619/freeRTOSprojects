@@ -26,9 +26,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include <task.h>
-#include <queue.h>
-#include <semphr.h>
+
 
 /* USER CODE END Includes */
 
@@ -41,29 +39,13 @@
 /* USER CODE BEGIN PD */
 ///#define DWT_CTRL (*(volatile uint32_t*)0xE0001000)
 
-char const * const mainMenuMsg = "Main Menu:\r\n0:Led Menu\r\n1:Rtc Menu\r\n2:Exit\r\n";
-
-char const * const ledMenuMsg = "LED Menu:\r\n0:Led OFF\r\n1:LED Sequential\r\n2:Exit\r\n";
-
-static void MenuTask(void *argument);
-static void LEDTask(void *argument);
-static void RTCTask(void *argument);
-
-static void PrintTask(void *argument);
-static void CommandParseTask(void *argument);
-
 //the address of Task2Handle is passed to xTaskCreate.
 //this global variable will be used by Task3 to delete BlueTask.
-TaskHandle_t menuTaskHandle = NULL;
-TaskHandle_t ledTaskHandle = NULL;
-TaskHandle_t rtcTaskHandle = NULL;
-
-TaskHandle_t printTaskHandle = NULL;
-
-TaskHandle_t commandParseTaskHandle = NULL;
 
 
-uint8_t uartRxData;
+
+
+
 
 app_state_t appState = sMainMenu;
 
@@ -200,6 +182,9 @@ int main(void)
 		  	  STACK_SIZE, NULL,
 			  tskIDLE_PRIORITY + 1,
 			  CommandParseTaskStack, &CommandParseTaskTCB);
+  
+  //set initial app state to main menu
+  appState = sMainMenu;
 
   // start the uart RX interrupt
   HAL_UART_Receive_IT(&huart2, &uartRxData, sizeof(uint8_t));
@@ -341,167 +326,6 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-
-static void MenuTask(void *argument) {
-	SEGGER_SYSVIEW_PrintfHost("Menu task running");
-  
-  // print our menu
-  if(appState == sMainMenu){
-    xSemaphoreTake(printMutex, portMAX_DELAY);
-    for(size_t i =0; i<strlen(mainMenuMsg);i++){
-      if(uxQueueSpacesAvailable(printQueue)!=0){
-        xQueueSendToBack(printQueue, &mainMenuMsg[i], portMAX_DELAY);
-      }
-      else{
-        
-      }
-    }
-    //xQueueSendToBack(printQueue, mainMenuMsg, portMAX_DELAY);
-    xSemaphoreGive(printMutex);
-  }
-  
-	while(1){
-
-	}
-}
-static void LEDTask(void *argument) {
-	SEGGER_SYSVIEW_PrintfHost("LED task running");
-	while(1){
-
-	}
-}
-static void RTCTask(void *argument) {
-	SEGGER_SYSVIEW_PrintfHost("RTC task running");
-	while(1){
-
-	}
-}
-
-static void PrintTask(void *argument) {
-  TickType_t xLastWakeTime;
-  const TickType_t xFrequency = pdMS_TO_TICKS(200);
-  
-	SEGGER_SYSVIEW_PrintfHost("Print task running");
-  
-  // Initialise the xLastWakeTime variable with the current time.
-  xLastWakeTime = xTaskGetTickCount();
-  
-	while(1){
-    if(uxQueueMessagesWaiting(printQueue)!=0){
-      
-      char charsToPrint[50];
-      // array of pointers to constant char
-      ///char const * stringsToPrint[20];
-      int i =0;
-      SEGGER_SYSVIEW_PrintfHost("Printing queue");
-      xSemaphoreTake(printMutex, portMAX_DELAY);
-      
-      // copy over string pointer to print from the queue
-      while(xQueueReceive(printQueue, &charsToPrint[i++], 0) == pdPASS);
-      xQueueReset(printQueue);
-      
-      xSemaphoreGive(printMutex);
-      //make sure to end the command with null char
-      charsToPrint[i] = '\0';
-      HAL_UART_Transmit_IT(&huart2, (void*)charsToPrint, strnlen(charsToPrint, (size_t)50));
-      // for(int j=0; j < i;j++){
-      //   HAL_UART_Transmit_IT(&huart2, (void*)stringsToPrint[j], strnlen(stringsToPrint[j], (size_t)100));
-      // }
-      
-    }
-    else{
-      //vTaskDelay(pdMS_TO_TICKS(200));
-      // Wait for the next cycle.
-      vTaskDelayUntil( &xLastWakeTime, xFrequency );
-    }
-	}
-}
-static void CommandParseTask(void *argument) {
-	SEGGER_SYSVIEW_PrintfHost("Command task running");
-  uint8_t userCommand[30];
-  BaseType_t notificationValue = pdFALSE;
-	while(1){
-
-		//wait to get notified that the uart queue holds a command to be proccessed
-		notificationValue =  xTaskNotifyWait(0,
-		                             0,
-		                             NULL,
-		                             portMAX_DELAY);//wait indefinitely
-    if(notificationValue==pdTRUE){
-      SEGGER_SYSVIEW_PrintfHost("CMD got notified");
-      memset(userCommand, 0, sizeof(uint8_t)*30);
-      ///BaseType_t gotChar = pdFALSE;
-      int i=0;
-      taskENTER_CRITICAL();
-      //empty queue data by copying it into a local char array
-      // read from the queue and return immediatelly if no data is available
-      //while(xQueueReceive(inputDataQueue, (userCommand+i), 0) == pdPASS){
-      //  i++;
-      //}
-      while(xQueueReceive(inputDataQueue, &userCommand[i++], 0) == pdPASS);
-      xQueueReset(inputDataQueue);
-      /**
-       * @brief 
-       * uxQueueMessagesWaiting - number of items in queue
-       */
-      taskEXIT_CRITICAL();
-      //print the data we got to SEGGER
-      SEGGER_SYSVIEW_PrintfHost("Got cmd:%s", (char*)userCommand);
-      
-      switch(appState){
-        case(sMainMenu): {
-          if(strncmp((char*)userCommand, "one", (size_t)3)==0){
-            xTaskNotifyIndexed(menuTaskHandle, 0, MENU_CMD_ONE, eSetValueWithOverwrite);
-          }
-          else if(strncmp((char*)userCommand, "two", (size_t)3)==0){
-            xTaskNotifyIndexed(menuTaskHandle, 0, MENU_CMD_TWO, eSetValueWithOverwrite);
-          }
-          else if(strncmp((char*)userCommand, "three", (size_t)5)==0){
-            xTaskNotifyIndexed(menuTaskHandle, 0, MENU_CMD_THREE, eSetValueWithOverwrite);
-          }
-          else {
-            xTaskNotifyIndexed(menuTaskHandle, 0, MENU_CMD_BAD_CMD, eSetValueWithOverwrite);
-          }
-        }; break;
-        case(sLedEffect):{
-          if(strncmp((char*)userCommand, "one", (size_t)3)==0){
-            xTaskNotifyIndexed(ledTaskHandle, 0, LED_EFFECT_CMD_ONE, eSetValueWithOverwrite);
-          }
-          else if(strncmp((char*)userCommand, "two", (size_t)3)==0){
-            xTaskNotifyIndexed(ledTaskHandle, 0, LED_EFFECT_CMD_TWO, eSetValueWithOverwrite);
-          }
-          else if(strncmp((char*)userCommand, "three", (size_t)5)==0){
-            xTaskNotifyIndexed(ledTaskHandle, 0, LED_EFFECT_CMD_THREE, eSetValueWithOverwrite);
-          }
-          else {
-            xTaskNotifyIndexed(ledTaskHandle, 0, LED_EFFECT_CMD_BAD_CMD, eSetValueWithOverwrite);
-          }
-        }; break;
-        case(sRtcMenu):
-        case(sRtcTimeConfig):
-        case(sRtcDateConfig):
-        case(sRtcReport):{
-          if(strncmp((char*)userCommand, "one", (size_t)3)==0){
-            xTaskNotifyIndexed(rtcTaskHandle, 0, RTC_MENU_CMD_ONE, eSetValueWithOverwrite);
-          }
-          else if(strncmp((char*)userCommand, "two", (size_t)3)==0){
-            xTaskNotifyIndexed(rtcTaskHandle, 0, RTC_MENU_CMD_TWO, eSetValueWithOverwrite);
-          }
-          else if(strncmp((char*)userCommand, "three", (size_t)5)==0){
-            xTaskNotifyIndexed(rtcTaskHandle, 0, RTC_MENU_CMD_THREE, eSetValueWithOverwrite);
-          }
-          else {
-            xTaskNotifyIndexed(rtcTaskHandle, 0, RTC_MENU_CMD_BAD_CMD, eSetValueWithOverwrite);
-          }
-        }; break;
-        default:{
-          
-        }
-      }
-    }
-    //else case should not happen
-	}
-}
 
 /**
   * @brief  Rx Transfer completed callback.

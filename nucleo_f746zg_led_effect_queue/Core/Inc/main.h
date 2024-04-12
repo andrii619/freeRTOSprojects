@@ -31,14 +31,32 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <appCommon.h>
+
+//freertos
+///#include <task.h>
+
+
+//c std
 #include <stdint.h>
 #include <string.h>
-#include <FreeRTOS.h>
-#include <SEGGER_SYSVIEW.h>
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+
+//task functions
+extern void MenuTask(void *argument);
+extern void LEDTask(void *argument);
+extern void RTCTask(void *argument);
+extern void PrintTask(void *argument);
+extern void CommandParseTask(void *argument);
+
+
+
+
+
+
 
 /* USER CODE END ET */
 
@@ -73,41 +91,10 @@ void Error_Handler(void);
 #define LD2_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-typedef enum {
-  sMainMenu = 0,
-  sLedEffect,
-  sRtcMenu,
-  sRtcTimeConfig,
-  sRtcDateConfig,
-  sRtcReport,
-} app_state_t;
 
 
-typedef enum {
-  MENU_CMD_ONE=      (1<<0),
-  MENU_CMD_TWO=      (1<<1),
-  MENU_CMD_THREE=    (1<<2),
-  MENU_CMD_FOUR=     (1<<3),
-  MENU_CMD_BAD_CMD=   (1<<31),
-} mainMenuCmd;
 
 
-typedef enum {
-  LED_EFFECT_CMD_ONE=      (1<<0),
-  LED_EFFECT_CMD_TWO=      (1<<1),
-  LED_EFFECT_CMD_THREE=    (1<<2),
-  LED_EFFECT_CMD_FOUR=     (1<<3),
-  LED_EFFECT_CMD_BAD_CMD=   (1<<31),
-} ledEffectCmd;
-
-
-typedef enum {
-  RTC_MENU_CMD_ONE=      (1<<0),
-  RTC_MENU_CMD_TWO=      (1<<1),
-  RTC_MENU_CMD_THREE=    (1<<2),
-  RTC_MENU_CMD_FOUR=     (1<<3),
-  RTC_MENU_CMD_BAD_CMD=   (1<<31),
-} rtcMenuCmd;
 
 /* USER CODE END Private defines */
 
