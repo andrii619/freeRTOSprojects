@@ -27,7 +27,7 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f7xx_hal.h"
+
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -39,18 +39,18 @@ extern "C" {
 
 //c std
 #include <stdint.h>
-#include <string.h>
+//#include <string.h>
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 
 //task functions
-extern void MenuTask(void *argument);
-extern void LEDTask(void *argument);
-extern void RTCTask(void *argument);
-extern void PrintTask(void *argument);
-extern void CommandParseTask(void *argument);
+// extern void MenuTask(void *argument);
+// extern void LEDTask(void *argument);
+// extern void RTCTask(void *argument);
+// extern void PrintTask(void *argument);
+// extern void CommandParseTask(void *argument);
 
 
 

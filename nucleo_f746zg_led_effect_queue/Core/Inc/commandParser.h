@@ -5,7 +5,7 @@
 // #include <SEGGER_SYSVIEW.h>
 
 #include <appCommon.h>
-TaskHandle_t commandParseTaskHandle;
+//TaskHandle_t commandParseTaskHandle;
 
 
 #endif // __COMMAND_PARSER_H

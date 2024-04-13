@@ -23,6 +23,11 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
+#include "printManager.h"
+#include "commandParser.h"
+#include "ledEffect.h"
+#include "mainMenu.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -46,7 +51,7 @@
 
 
 
-
+PrintManager printer;
 app_state_t appState = sMainMenu;
 
 /**
@@ -54,33 +59,29 @@ app_state_t appState = sMainMenu;
  * When the interrupt recieves the \n character it notifies
  * the commandParsingTask. Then the commandParsingTask empties and process the command.
  */
-QueueHandle_t inputDataQueue; // holds UART input data
-
-QueueHandle_t printQueue;
-
-SemaphoreHandle_t printMutex;
+//QueueHandle_t inputDataQueue; // holds UART input data
 
 // some common variables to use for each task
 // 128 * 4 = 512 bytes
 //(recommended min stack size per task)
-#define STACK_SIZE 128
+//#define STACK_SIZE 128
 
 //define stack and task control block (TCB) for the red task
 
-static StackType_t MenuTaskStack[STACK_SIZE];
-static StaticTask_t MenuTaskTCB;
+// static StackType_t MenuTaskStack[STACK_SIZE];
+// static StaticTask_t MenuTaskTCB;
 
-static StackType_t LEDTaskStack[STACK_SIZE];
-static StaticTask_t LEDTaskTCB;
+// static StackType_t LEDTaskStack[STACK_SIZE];
+// static StaticTask_t LEDTaskTCB;
 
-static StackType_t RTCTaskStack[STACK_SIZE];
-static StaticTask_t RTCTaskTCB;
+// static StackType_t RTCTaskStack[STACK_SIZE];
+// static StaticTask_t RTCTaskTCB;
 
-static StackType_t PrintTaskStack[STACK_SIZE];
-static StaticTask_t PrintTaskTCB;
+//static StackType_t PrintTaskStack[STACK_SIZE];
+//static StaticTask_t PrintTaskTCB;
 
-static StackType_t CommandParseTaskStack[STACK_SIZE];
-static StaticTask_t CommandParseTaskTCB;
+// static StackType_t CommandParseTaskStack[STACK_SIZE];
+// static StaticTask_t CommandParseTaskTCB;
 
 
 /* USER CODE END PD */
@@ -142,52 +143,44 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-
-  //HAL_UART_
-
   SEGGER_SYSVIEW_Conf();
-
   // call sysview start to start manual rtt recordings
   SEGGER_SYSVIEW_Start();
-  //using an inlined if statement with an infinite while loop to stop in case
-  //the task wasn't created successfully
-
-  //
-  //printQueue = xQueueCreate(100, sizeof(char const *));
-  printQueue = xQueueCreate(100, sizeof(uint8_t));
-
-  inputDataQueue = xQueueCreate(20, sizeof(uint8_t));
+  // create the print manager task
   
-  printMutex = xSemaphoreCreateMutex();
+  printManagerInit(&printer, &huart2);
+  
+  MainMenu m2;
+  mainMenuInit(&m2);
+  
+  //inputDataQueue = xQueueCreate(20, sizeof(uint8_t));
+  
+  //printMutex = xSemaphoreCreateMutex();
 
   //xTaskCreateStatic returns task hanlde
   //always passes since memory was statically allocated
-  menuTaskHandle = xTaskCreateStatic(MenuTask, "MenuTask", STACK_SIZE, NULL,
-    					tskIDLE_PRIORITY + 1,
-    					MenuTaskStack, &MenuTaskTCB);
+  // menuTaskHandle = xTaskCreateStatic(MenuTask, "MenuTask", STACK_SIZE, NULL,
+  //   					tskIDLE_PRIORITY + 1,
+  //   					MenuTaskStack, &MenuTaskTCB);
 
-  ledTaskHandle = xTaskCreateStatic(LEDTask, "LEDTask", STACK_SIZE, NULL,
-      					tskIDLE_PRIORITY + 1,
-      					LEDTaskStack, &LEDTaskTCB);
+  // ledTaskHandle = xTaskCreateStatic(LEDTask, "LEDTask", STACK_SIZE, NULL,
+  //     					tskIDLE_PRIORITY + 1,
+  //     					LEDTaskStack, &LEDTaskTCB);
 
-  rtcTaskHandle = xTaskCreateStatic(RTCTask, "RTCTask", STACK_SIZE, NULL,
-        					tskIDLE_PRIORITY + 1,
-        					RTCTaskStack, &RTCTaskTCB);
+  // rtcTaskHandle = xTaskCreateStatic(RTCTask, "RTCTask", STACK_SIZE, NULL,
+  //       					tskIDLE_PRIORITY + 1,
+  //       					RTCTaskStack, &RTCTaskTCB);
 
-  printTaskHandle = xTaskCreateStatic(PrintTask, "PrintTask", STACK_SIZE, NULL,
-        					tskIDLE_PRIORITY + 1,
-        					PrintTaskStack, &PrintTaskTCB);
-
-  commandParseTaskHandle = xTaskCreateStatic(CommandParseTask, "CommandParseTask",
-		  	  STACK_SIZE, NULL,
-			  tskIDLE_PRIORITY + 1,
-			  CommandParseTaskStack, &CommandParseTaskTCB);
+  // commandParseTaskHandle = xTaskCreateStatic(CommandParseTask, "CommandParseTask",
+	// 	  	  STACK_SIZE, NULL,
+	// 		  tskIDLE_PRIORITY + 1,
+	// 		  CommandParseTaskStack, &CommandParseTaskTCB);
   
   //set initial app state to main menu
   appState = sMainMenu;
 
   // start the uart RX interrupt
-  HAL_UART_Receive_IT(&huart2, &uartRxData, sizeof(uint8_t));
+  ///HAL_UART_Receive_IT(&huart2, &uartRxData, sizeof(uint8_t));
 
   //start the scheduler - shouldn't return unless there's a problem
   vTaskStartScheduler();
@@ -327,77 +320,6 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 
-/**
-  * @brief  Rx Transfer completed callback.
-  * @param  huart UART handle.
-  * @retval None
-  */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-  /* Prevent unused argument(s) compilation warning */
-	BaseType_t static notifyCommandTask = pdFALSE;
-  UNUSED(huart);
-
-  /* NOTE : This function should not be modified, when the callback is needed,
-            the HAL_UART_RxCpltCallback can be implemented in the user file.
-   */
-
-  //immediatelly send the character to echo back to the user bypassing the task print queue
-  //enqueue the char into the print queue instead of sending it directly
-  // if(uartRxData!=13){
-  //   HAL_UART_Transmit_IT(huart, &uartRxData, sizeof(uint8_t));
-  // }
-  // else{
-  //   HAL_UART_Transmit_IT(huart, (uint8_t*)"\r\n", 2);
-  // }
-  xQueueSendToBackFromISR(printQueue, &uartRxData, NULL);
-  
-  //our data should hold the recieved byte
-  SEGGER_SYSVIEW_PrintfHost("UART RxCplt Callback %d", uartRxData);
-  SEGGER_SYSVIEW_PrintfHost("UART RxCplt Callback %c", (char)uartRxData);
-
-  // put the data into the queue
-  // suspend scheduler to make sure that no task tries to empty the queue
-  // while we write to it
-  if(uartRxData != 13){
-    SEGGER_SYSVIEW_PrintfHost("Enqueue %c", (char)uartRxData);
-    if(xQueueIsQueueFullFromISR(inputDataQueue)==pdFALSE){
-      xQueueSendToBackFromISR(inputDataQueue, &uartRxData, NULL);
-    }
-    else{
-      //queue is full and we still dont have \n to end a command
-      //empty the queue
-      xQueueReset(inputDataQueue);
-    }
-	  
-  }
-  else {
-	  //notify the command parsing task that a command arrived
-	  // dont need to put the \n into the queue
-    // xTaskNotifyFromISR( TaskHandle_t xTaskToNotify,
-    //                             uint32_t ulValue,
-    //                             eNotifyAction eAction,
-    //                             BaseType_t *pxHigherPriorityTaskWoken );
-    SEGGER_SYSVIEW_PrintfHost("Notifycmd %c", (char)uartRxData);
-	  xTaskNotifyFromISR( commandParseTaskHandle,
-                                (uint32_t) 0,
-                                eNoAction,
-                                &notifyCommandTask );
-  }
-
-}
-
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
-{
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(huart);
-
-  /* NOTE : This function should not be modified, when the callback is needed,
-            the HAL_UART_ErrorCallback can be implemented in the user file.
-   */
-  SEGGER_SYSVIEW_PrintfHost("UART Error Callback");
-}
-
 /* USER CODE END 4 */
 
 /**
@@ -427,6 +349,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
+  SEGGER_SYSVIEW_PrintfHost("In Error Handler");
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
   while (1)

@@ -2,6 +2,8 @@
 #ifndef __APP_COMMON_H
 #define __APP_COMMON_H
 
+#include "stm32f7xx_hal.h"
+
 #include <FreeRTOS.h>
 #include <SEGGER_SYSVIEW.h>
 
@@ -9,6 +11,8 @@
 #include <queue.h>
 #include <semphr.h>
 
+
+#define STACK_SIZE 128
 
 typedef enum {
   sMainMenu = 0,
@@ -48,15 +52,15 @@ typedef enum {
 
 //extern app_state_t appState;
 // task handles
-extern TaskHandle_t menuTaskHandle;
-extern TaskHandle_t rtcTaskHandle;
-extern TaskHandle_t ledTaskHandle;
-extern TaskHandle_t printTaskHandle;
-extern TaskHandle_t commandParseTaskHandle;
+// extern TaskHandle_t menuTaskHandle;
+// extern TaskHandle_t rtcTaskHandle;
+// extern TaskHandle_t ledTaskHandle;
+// ///extern TaskHandle_t printTaskHandle;
+// extern TaskHandle_t commandParseTaskHandle;
 
 
-extern QueueHandle_t printQueue;
-extern SemaphoreHandle_t printMutex;
+//extern QueueHandle_t printQueue;
+//extern SemaphoreHandle_t printMutex;
 
 extern app_state_t appState;
 
