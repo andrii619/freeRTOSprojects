@@ -39,14 +39,14 @@ static void MenuTask(void *argument) {
     //printMessage(&printer, mainMenuMsg, msgLen);
     
     printMessageBlocking(&printer, mainMenuMsg, msgLen);
-    
+    SEGGER_SYSVIEW_PrintfHost("Print main menu");
     vTaskDelay(pdMS_TO_TICKS(500));
 	}
 }
 
 
 void mainMenuInit(MainMenu *menu){
-  menu->menuTaskHandle = xTaskCreateStatic(MenuTask, "MenuTask", STACK_SIZE, NULL,
+  menu->menuTaskHandle = xTaskCreateStatic(MenuTask, "MenuTask", STACK_SIZE, (void*)menu,
      					tskIDLE_PRIORITY + 1,
      					menu->MenuTaskStack, &(menu->MenuTaskTCB));
 }

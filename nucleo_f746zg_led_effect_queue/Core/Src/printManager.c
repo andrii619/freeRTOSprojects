@@ -88,6 +88,9 @@ void printMessageBlocking(PrintManager *printer,char *m, size_t numberChars){
             xQueueSendToBack(printer->printQueue, &m[printedChars], portMAX_DELAY);
             printedChars++;
         }
+        else {
+            SEGGER_SYSVIEW_PrintfHost("Print queue overrun. Blocking");
+        }
     }
     xSemaphoreGive(printer->printMutex);
 }
@@ -98,7 +101,7 @@ void printManagerInit(PrintManager *printer, UART_HandleTypeDef *huartHandle){
     
     printer->printMutex = xSemaphoreCreateMutex();
     
-    printer->printTaskHandle = xTaskCreateStatic(PrintTask, "PrintTask", STACK_SIZE, NULL,
+    printer->printTaskHandle = xTaskCreateStatic(PrintTask, "PrintTask", STACK_SIZE, (void*)printer,
         					tskIDLE_PRIORITY + 1,
         					printer->PrintTaskStack, &(printer->PrintTaskTCB));
     

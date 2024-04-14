@@ -50,7 +50,7 @@
 
 
 
-
+MainMenu menu;
 PrintManager printer;
 app_state_t appState = sMainMenu;
 
@@ -150,8 +150,7 @@ int main(void)
   
   printManagerInit(&printer, &huart2);
   
-  MainMenu m2;
-  mainMenuInit(&m2);
+  mainMenuInit(&menu);
   
   //inputDataQueue = xQueueCreate(20, sizeof(uint8_t));
   
