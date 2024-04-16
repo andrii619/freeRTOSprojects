@@ -7,39 +7,39 @@ static void PrintTask(void *argument) {
   PrintManager *printer = (PrintManager *)argument;
   assert_param(isPrinterInitialized(printer) == pdTRUE);
 
-  TickType_t xLastWakeTime;
-  const TickType_t xFrequency = pdMS_TO_TICKS(200);
+  // TickType_t xLastWakeTime;
+  // const TickType_t xFrequency = pdMS_TO_TICKS(200);
 
   SEGGER_SYSVIEW_PrintfHost("Print task running");
   // Initialise the xLastWakeTime variable with the current time.
-  xLastWakeTime = xTaskGetTickCount();
+  // xLastWakeTime = xTaskGetTickCount();
   while (1) {
-    if (uxQueueMessagesWaiting(printer->printQueue) != 0) {
+
+    if (xSemaphoreTake(printer->readyForPrintSignal, portMAX_DELAY) == pdTRUE) {
+      // the printing queue is not empty
+      // print the entire queue and go to blocking state untill theres more to
+      // print in the queue
+      // assert that if we are here then the queue is not empty
+      // if it is empty then someone generated signal by error so we just lock
+      // up
+      assert_param(uxQueueMessagesWaiting(printer->printQueue) != 0);
 
       char charsToPrint[50];
       int i = 0;
       SEGGER_SYSVIEW_PrintfHost("Printing queue");
-      xSemaphoreTake(printer->printQueueMutex, portMAX_DELAY);
 
+      xSemaphoreTake(printer->printQueueMutex, portMAX_DELAY);
       // copy over string pointer to print from the queue
       while (xQueueReceive(printer->printQueue, &charsToPrint[i++], 0) ==
              pdPASS)
         ;
       xQueueReset(printer->printQueue);
-
       xSemaphoreGive(printer->printQueueMutex);
+
       // make sure to end the command with null char
       charsToPrint[i] = '\0';
       SEGGER_SYSVIEW_PrintfHost("Printing %d chars", i);
       HAL_UART_Transmit_IT(printer->huartHandle, (void *)charsToPrint, i);
-      // for(int j=0; j < i;j++){
-      //   HAL_UART_Transmit_IT(&huart2, (void*)stringsToPrint[j],
-      //   strnlen(stringsToPrint[j], (size_t)100));
-      // }
-    } else {
-      // vTaskDelay(pdMS_TO_TICKS(200));
-      //  Wait for the next cycle.
-      vTaskDelayUntil(&xLastWakeTime, xFrequency);
     }
   }
 }
@@ -63,6 +63,11 @@ size_t printMessage(PrintManager *printer, char *m, size_t numberChars) {
   // xQueueSendToBack(printQueue, mainMenuMsg, portMAX_DELAY);
   xSemaphoreGive(printer->printQueueMutex);
 
+  // give signal that there is something for the print task to print
+  if (printedChars > 0) {
+    xSemaphoreGive(printer->readyForPrintSignal);
+  }
+
   return printedChars;
 }
 
@@ -82,6 +87,8 @@ void printMessageBlocking(PrintManager *printer, char *m, size_t numberChars) {
     }
   }
   xSemaphoreGive(printer->printQueueMutex);
+  // give signal that there is something for the print task to print
+  xSemaphoreGive(printer->readyForPrintSignal);
 }
 
 void printManagerInit(PrintManager *printer, UART_HandleTypeDef *huartHandle) {
@@ -92,7 +99,7 @@ void printManagerInit(PrintManager *printer, UART_HandleTypeDef *huartHandle) {
   assert_param(printer->printQueue != NULL);
 
   printer->printQueueMutex = xSemaphoreCreateMutex();
-  assert_param(printer->readyForPrintSignal != NULL);
+  assert_param(printer->printQueueMutex != NULL);
 
   printer->readyForPrintSignal = xSemaphoreCreateBinary();
   assert_param(printer->readyForPrintSignal != NULL);
