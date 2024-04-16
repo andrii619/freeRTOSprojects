@@ -153,7 +153,7 @@ int main(void) {
 
   // inputDataQueue = xQueueCreate(20, sizeof(uint8_t));
 
-  // printMutex = xSemaphoreCreateMutex();
+  // printQueueMutex = xSemaphoreCreateMutex();
 
   // xTaskCreateStatic returns task hanlde
   // always passes since memory was statically allocated
@@ -170,7 +170,8 @@ int main(void) {
   //       					RTCTaskStack, &RTCTaskTCB);
 
   // commandParseTaskHandle = xTaskCreateStatic(CommandParseTask,
-  // "CommandParseTask", 	  	  STACK_SIZE, NULL, 		  tskIDLE_PRIORITY
+  // "CommandParseTask", 	  	  STACK_SIZE, NULL,
+  // tskIDLE_PRIORITY
   // + 1, 		  CommandParseTaskStack, &CommandParseTaskTCB);
 
   // set initial app state to main menu
@@ -356,7 +357,7 @@ void assert_failed(uint8_t *file, uint32_t line) {
   /* User can add his own implementation to report the file name and line
      number, ex: printf("Wrong parameters value: file %s on line %d\r\n", file,
      line) */
-  SEGGER_SYSVIEW_PrintfHost("Assert Failed");
+  SEGGER_SYSVIEW_PrintfHost("assert_failed: file:%s, ln:%d", file, line);
   while (1) {
   }
   /* USER CODE END 6 */

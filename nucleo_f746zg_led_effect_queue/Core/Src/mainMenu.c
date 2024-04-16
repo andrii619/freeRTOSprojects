@@ -19,7 +19,7 @@ static void MenuTask(void *argument) {
 
   // print our menu
   //  if(appState == sMainMenu){
-  //    xSemaphoreTake(printMutex, portMAX_DELAY);
+  //    xSemaphoreTake(printQueueMutex, portMAX_DELAY);
   //    for(size_t i =0; i<strlen(mainMenuMsg);i++){
   //      if(uxQueueSpacesAvailable(printQueue)!=0){
   //        xQueueSendToBack(printQueue, &mainMenuMsg[i], portMAX_DELAY);
@@ -29,7 +29,7 @@ static void MenuTask(void *argument) {
   //      }
   //    }
   //    //xQueueSendToBack(printQueue, mainMenuMsg, portMAX_DELAY);
-  //    xSemaphoreGive(printMutex);
+  //    xSemaphoreGive(printQueueMutex);
   //  }
 
   size_t msgLen = strlen(mainMenuMsg);

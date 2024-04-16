@@ -17,7 +17,8 @@ typedef struct {
   StaticTask_t PrintTaskTCB;
 
   QueueHandle_t printQueue;
-  SemaphoreHandle_t printMutex;
+  SemaphoreHandle_t printQueueMutex;
+  SemaphoreHandle_t readyForPrintSignal;
 
   // pointer to uart handle that this printer manages
   UART_HandleTypeDef *huartHandle;
@@ -29,7 +30,5 @@ void printManagerInit(PrintManager *printer, UART_HandleTypeDef *uartHandle);
 size_t printMessage(PrintManager *printer, char *m, size_t numberChars);
 
 void printMessageBlocking(PrintManager *printer, char *m, size_t numberChars);
-
-BaseType_t isPrinterInitialized(PrintManager *);
 
 #endif //__PRINT_MANAGER_H

@@ -104,4 +104,4 @@ void CommandParseTask(void *argument) {
 
 void commandParserInit(CommandParser *parser) {}
 
-BaseType_t isCommandParserInitialized(CommandParser *) {}
+BaseType_t isCommandParserInitialized(CommandParser *) { return pdFALSE; };

@@ -1,14 +1,11 @@
 #include <printManager.h>
 
+static BaseType_t isPrinterInitialized(PrintManager *);
+
 static void PrintTask(void *argument) {
   // the print manager is passed as an argument to the task
   PrintManager *printer = (PrintManager *)argument;
-
-  if (isPrinterInitialized(printer) == pdFALSE) {
-    // lock up the task indefinatelly
-    SEGGER_SYSVIEW_PrintfHost("Print task uninitialized");
-    vTaskSuspend(printer->printTaskHandle);
-  }
+  assert_param(isPrinterInitialized(printer) == pdTRUE);
 
   TickType_t xLastWakeTime;
   const TickType_t xFrequency = pdMS_TO_TICKS(200);
@@ -22,7 +19,7 @@ static void PrintTask(void *argument) {
       char charsToPrint[50];
       int i = 0;
       SEGGER_SYSVIEW_PrintfHost("Printing queue");
-      xSemaphoreTake(printer->printMutex, portMAX_DELAY);
+      xSemaphoreTake(printer->printQueueMutex, portMAX_DELAY);
 
       // copy over string pointer to print from the queue
       while (xQueueReceive(printer->printQueue, &charsToPrint[i++], 0) ==
@@ -30,7 +27,7 @@ static void PrintTask(void *argument) {
         ;
       xQueueReset(printer->printQueue);
 
-      xSemaphoreGive(printer->printMutex);
+      xSemaphoreGive(printer->printQueueMutex);
       // make sure to end the command with null char
       charsToPrint[i] = '\0';
       SEGGER_SYSVIEW_PrintfHost("Printing %d chars", i);
@@ -49,14 +46,11 @@ static void PrintTask(void *argument) {
 
 size_t printMessage(PrintManager *printer, char *m, size_t numberChars) {
 
-  if (!printer || !m || !printer->printMutex || !printer->printQueue) {
-    // error, printer not intialized
-    return 0;
-  }
+  assert_param(isPrinterInitialized(printer) == pdTRUE);
 
   size_t printedChars = 0;
 
-  xSemaphoreTake(printer->printMutex, portMAX_DELAY);
+  xSemaphoreTake(printer->printQueueMutex, portMAX_DELAY);
   for (; printedChars < numberChars; printedChars++) {
     if (uxQueueSpacesAvailable(printer->printQueue) != 0) {
       xQueueSendToBack(printer->printQueue, &m[printedChars], portMAX_DELAY);
@@ -67,20 +61,18 @@ size_t printMessage(PrintManager *printer, char *m, size_t numberChars) {
     }
   }
   // xQueueSendToBack(printQueue, mainMenuMsg, portMAX_DELAY);
-  xSemaphoreGive(printer->printMutex);
+  xSemaphoreGive(printer->printQueueMutex);
 
   return printedChars;
 }
 
 void printMessageBlocking(PrintManager *printer, char *m, size_t numberChars) {
-  if (!printer || !m || !printer->printMutex || !printer->printQueue) {
-    // error, printer not intialized
-    return;
-  }
+
+  assert_param(isPrinterInitialized(printer) == pdTRUE);
 
   size_t printedChars = 0;
 
-  xSemaphoreTake(printer->printMutex, portMAX_DELAY);
+  xSemaphoreTake(printer->printQueueMutex, portMAX_DELAY);
   while (printedChars < numberChars) {
     if (uxQueueSpacesAvailable(printer->printQueue) != 0) {
       xQueueSendToBack(printer->printQueue, &m[printedChars], portMAX_DELAY);
@@ -89,26 +81,33 @@ void printMessageBlocking(PrintManager *printer, char *m, size_t numberChars) {
       SEGGER_SYSVIEW_PrintfHost("Print queue overrun. Blocking");
     }
   }
-  xSemaphoreGive(printer->printMutex);
+  xSemaphoreGive(printer->printQueueMutex);
 }
 
 void printManagerInit(PrintManager *printer, UART_HandleTypeDef *huartHandle) {
-  printer->printQueue = xQueueCreate(100, sizeof(uint8_t));
+  assert_param(huartHandle != NULL);
+  printer->huartHandle = huartHandle;
 
-  printer->printMutex = xSemaphoreCreateMutex();
+  printer->printQueue = xQueueCreate(100, sizeof(uint8_t));
+  assert_param(printer->printQueue != NULL);
+
+  printer->printQueueMutex = xSemaphoreCreateMutex();
+  assert_param(printer->readyForPrintSignal != NULL);
+
+  printer->readyForPrintSignal = xSemaphoreCreateBinary();
+  assert_param(printer->readyForPrintSignal != NULL);
 
   printer->printTaskHandle = xTaskCreateStatic(
       PrintTask, "PrintTask", STACK_SIZE, (void *)printer, tskIDLE_PRIORITY + 1,
       printer->PrintTaskStack, &(printer->PrintTaskTCB));
-
-  printer->huartHandle = huartHandle;
+  assert_param(printer->printTaskHandle != NULL);
 }
 
 BaseType_t isPrinterInitialized(PrintManager *printer) {
-  if (!printer || !printer->printMutex || !printer->printQueue ||
-      !printer->printTaskHandle || !printer->huartHandle) {
+  if (!printer || !printer->printQueueMutex || !printer->readyForPrintSignal ||
+      !printer->printQueue || !printer->printTaskHandle ||
+      !printer->huartHandle) {
     return pdFALSE;
   }
-
   return pdTRUE;
 }
