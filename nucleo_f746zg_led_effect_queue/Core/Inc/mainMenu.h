@@ -4,13 +4,7 @@
 // #include <FreeRTOS.h>
 // #include <SEGGER_SYSVIEW.h>
 
-// #include <task.h>
-
 #include <appCommon.h>
-
-///#include <string.h>
-
-// TaskHandle_t menuTaskHandle;
 
 typedef struct {
   TaskHandle_t menuTaskHandle;
@@ -18,8 +12,6 @@ typedef struct {
   StaticTask_t MenuTaskTCB;
 
 } MainMenu;
-
-// static void MenuTask(void *argument);
 
 void mainMenuInit(MainMenu *);
 

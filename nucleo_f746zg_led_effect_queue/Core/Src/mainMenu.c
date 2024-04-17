@@ -33,21 +33,21 @@ static void MenuTask(void *argument) {
   //  }
 
   size_t msgLen = strlen(mainMenuMsg);
-
+  uint8_t menuItenationNum = 0;
   while (1) {
 
     // printMessage(&printer, mainMenuMsg, msgLen);
-
+    SEGGER_SYSVIEW_PrintfHost("Print main menu %d", menuItenationNum++);
     printMessageBlocking(&printer, mainMenuMsg, msgLen);
-    SEGGER_SYSVIEW_PrintfHost("Print main menu");
-    vTaskDelay(pdMS_TO_TICKS(500));
+
+    vTaskDelay(pdMS_TO_TICKS(100));
   }
 }
 
 void mainMenuInit(MainMenu *menu) {
   menu->menuTaskHandle = xTaskCreateStatic(
-      MenuTask, "MenuTask", STACK_SIZE, (void *)menu, tskIDLE_PRIORITY + 1,
-      menu->MenuTaskStack, &(menu->MenuTaskTCB));
+      MenuTask, MAIN_MENU_TASK_NAME, STACK_SIZE, (void *)menu,
+      MAIN_MENU_TASK_PRIORITY, menu->MenuTaskStack, &(menu->MenuTaskTCB));
 }
 
 BaseType_t isMainMenuInitialized(MainMenu *menu) {

@@ -26,16 +26,16 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
   // immediatelly send the character to echo back to the user bypassing the task
   // print queue enqueue the char into the print queue instead of sending it
   // directly
-  if (uartRxData != 13) {
-    HAL_UART_Transmit_IT(huart, &uartRxData, sizeof(uint8_t));
-  } else {
-    HAL_UART_Transmit_IT(huart, (uint8_t *)"\r\n", 2);
-  }
+  // if (uartRxData != 13) {
+  //   HAL_UART_Transmit_IT(huart, &uartRxData, sizeof(uint8_t));
+  // } else {
+  //   HAL_UART_Transmit_IT(huart, (uint8_t *)"\r\n", 2);
+  // }
   // xQueueSendToBackFromISR(printQueue, &uartRxData, NULL);
 
   // our data should hold the recieved byte
   SEGGER_SYSVIEW_PrintfHost("UART RxCplt Callback %d", uartRxData);
-  SEGGER_SYSVIEW_PrintfHost("UART RxCplt Callback %c", (char)uartRxData);
+  // SEGGER_SYSVIEW_PrintfHost("UART RxCplt Callback %c", (char)uartRxData);
 
   // put the data into the queue
   // suspend scheduler to make sure that no task tries to empty the queue
@@ -51,7 +51,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     //   xQueueReset(inputDataQueue);
     // }
 
-    printMessage(&printer, (char *)&uartRxData, 1);
+    /// printMessage(&printer, (char *)&uartRxData, 1);
 
   } else {
     // notify the command parsing task that a command arrived

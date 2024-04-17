@@ -9,10 +9,15 @@
 
 #include <appCommon.h>
 
-// char const * const ledMenuMsg = "LED Menu:\r\n0:Led OFF\r\n1:LED
-// Sequential\r\n2:Exit\r\n";
+typedef struct {
+  TaskHandle_t ledEffectTaskHandle;
+  StackType_t ledEffectTaskStack[STACK_SIZE];
+  StaticTask_t ledEffectTaskTCB;
 
-// TaskHandle_t ledTaskHandle;
-void LEDTask(void *argument);
+} LEDEffect;
+
+void ledEffectInit(LEDEffect *);
+
+BaseType_t isLedEffectInitialized(LEDEffect *);
 
 #endif //__LED_EFFECT_H

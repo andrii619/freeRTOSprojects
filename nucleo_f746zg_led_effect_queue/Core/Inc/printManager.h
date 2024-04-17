@@ -7,6 +7,7 @@
 // #include <task.h>
 #include <appCommon.h>
 
+#include <math.h>
 #include <string.h>
 // TaskHandle_t printTaskHandle;
 

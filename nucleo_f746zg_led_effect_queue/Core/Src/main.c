@@ -48,6 +48,7 @@
 MainMenu menu;
 PrintManager printer;
 CommandParser parser;
+LEDEffect ledController;
 
 app_state_t appState = sMainMenu;
 
@@ -150,6 +151,8 @@ int main(void) {
   mainMenuInit(&menu);
 
   commandParserInit(&parser);
+
+  ledEffectInit(&ledController);
 
   // inputDataQueue = xQueueCreate(20, sizeof(uint8_t));
 
