@@ -12,10 +12,7 @@ static void MenuTask(void *argument) {
 
   MainMenu *menu = (MainMenu *)argument;
 
-  if (isMainMenuInitialized(menu) == pdFALSE) {
-    SEGGER_SYSVIEW_PrintfHost("Menu not initialized");
-    vTaskSuspend(menu->menuTaskHandle);
-  }
+  assert_param(isMainMenuInitialized(menu) == pdTRUE);
 
   // print our menu
   //  if(appState == sMainMenu){
@@ -38,9 +35,9 @@ static void MenuTask(void *argument) {
 
     // printMessage(&printer, mainMenuMsg, msgLen);
     SEGGER_SYSVIEW_PrintfHost("Print main menu %d", menuItenationNum++);
-    printMessageBlocking(&printer, mainMenuMsg, msgLen);
-
-    vTaskDelay(pdMS_TO_TICKS(100));
+    printMessageBlocking(&printer, (uint8_t *)mainMenuMsg, msgLen);
+    HAL_Delay(100); // wait 10ms
+    // vTaskDelay(pdMS_TO_TICKS(100));
   }
 }
 
