@@ -28,9 +28,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
   // print queue enqueue the char into the print queue instead of sending it
   // directly
   // if data is a char echo it back to the user
-  // if (isprint(uartRxData)) {
-  HAL_UART_Transmit_IT(huart, &uartRxData, sizeof(uint8_t));
-  //}
+  if (uartRxData != 13) {
+    HAL_UART_Transmit_IT(huart, &uartRxData, sizeof(uint8_t));
+  } else {
+    HAL_UART_Transmit_IT(huart, (uint8_t *)"\r\n", 2);
+  }
 
   // xQueueSendToBackFromISR(printQueue, &uartRxData, NULL);
 

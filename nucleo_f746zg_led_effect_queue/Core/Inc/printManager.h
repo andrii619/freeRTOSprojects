@@ -60,10 +60,11 @@ void printManagerInit(PrintManager *printer, UART_HandleTypeDef *uartHandle);
  *
  * @param printer - pointer to an initialized PrintManager Handle
  * @param buffer - pointer to a char buffer
- * @param numberChars - number of characters to print
+ * @param bufferLength - number of characters to print
  * @return size_t returns the number of characters that were actually printed
  * without blocking. If an error occurrs the functions terminates according to
  * samurai principle.
+ * Do not use from an ISR
  */
 size_t printMessage(PrintManager const *const printer,
                     uint8_t const *const buffer, size_t bufferLength);
@@ -73,7 +74,8 @@ size_t printMessage(PrintManager const *const printer,
  *
  * @param printer
  * @param buffer
- * @param numberChars
+ * @param bufferLength
+ * Do not use from an ISR
  */
 void printMessageBlocking(PrintManager const *const printer,
                           uint8_t const *const buffer,

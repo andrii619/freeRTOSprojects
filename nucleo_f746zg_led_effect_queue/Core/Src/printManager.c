@@ -19,15 +19,16 @@ static void PrintTask(void *argument) {
       int i = 0;
       SEGGER_SYSVIEW_PrintfHost("COPY QUEUE");
       //  copy over string pointer to print from the queue
+      taskENTER_CRITICAL();
       while (xQueueReceive(printer->printQueue, &charsToPrint[i], 0) ==
-             pdPASS) {
+             pdPASS) { // &&
+                       // i <= PRINT_QUEUE_LENGTH) {
         i++;
         // this can happen if we get interrupted in the while loop and theres no
         // lock on the queue so any task can keep writing while we are emptying
         // at the same time.
-        if (i > 50)
-          break;
       };
+      taskEXIT_CRITICAL();
       SEGGER_SYSVIEW_PrintfHost("DONE COPY QUEUE");
       // make sure to end the command with null char
       charsToPrint[i] = '\0';

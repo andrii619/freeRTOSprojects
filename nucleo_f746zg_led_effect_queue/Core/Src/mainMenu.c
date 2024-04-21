@@ -37,7 +37,7 @@ static void MenuTask(void *argument) {
     SEGGER_SYSVIEW_PrintfHost("Print main menu %d", menuItenationNum++);
     printMessageBlocking(&printer, (uint8_t *)mainMenuMsg, msgLen);
     HAL_Delay(100); // wait 10ms
-    // vTaskDelay(pdMS_TO_TICKS(100));
+    // vTaskDelay(pdMS_TO_TICKS(2000));
   }
 }
 
