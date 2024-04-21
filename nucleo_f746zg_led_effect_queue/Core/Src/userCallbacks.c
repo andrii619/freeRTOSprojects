@@ -3,6 +3,7 @@
 
 #include <printManager.h>
 
+#include <ctype.h>
 #include <stdint.h>
 
 uint8_t uartRxData;
@@ -26,11 +27,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
   // immediatelly send the character to echo back to the user bypassing the task
   // print queue enqueue the char into the print queue instead of sending it
   // directly
-  // if (uartRxData != 13) {
-  //   HAL_UART_Transmit_IT(huart, &uartRxData, sizeof(uint8_t));
-  // } else {
-  //   HAL_UART_Transmit_IT(huart, (uint8_t *)"\r\n", 2);
-  // }
+  // if data is a char echo it back to the user
+  // if (isprint(uartRxData)) {
+  HAL_UART_Transmit_IT(huart, &uartRxData, sizeof(uint8_t));
+  //}
+
   // xQueueSendToBackFromISR(printQueue, &uartRxData, NULL);
 
   // our data should hold the recieved byte
@@ -52,7 +53,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     // }
 
     /// printMessage(&printer, (char *)&uartRxData, 1);
-
   } else {
     // notify the command parsing task that a command arrived
     //  dont need to put the \n into the queue

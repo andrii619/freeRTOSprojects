@@ -33,6 +33,7 @@ void ledEffectInit(LEDEffect *LEDController) {
       LEDTask, LED_EFFECT_TASK_NAME, STACK_SIZE, (void *)LEDController,
       LED_EFFECT_TASK_PRIORITY, LEDController->ledEffectTaskStack,
       &(LEDController->ledEffectTaskTCB));
+  assert_param(LEDController->ledEffectTaskHandle != NULL);
 }
 
 BaseType_t isLedEffectInitialized(LEDEffect *LEDController) {

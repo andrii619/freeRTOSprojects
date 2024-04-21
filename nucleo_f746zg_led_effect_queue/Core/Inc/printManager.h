@@ -11,13 +11,14 @@
  * Bigger queue uses more memory but it means that the printer will be able to
  * print more data in one shot.
  */
-#define PRINT_QUEUE_LENGTH (20)
+#define PRINT_QUEUE_LENGTH (50)
 
 /**
  * @brief Base time delay for exponential backoff algorithm. Used in
  * printMessageBlocking to introduce a time delay if the Backend can't keep up
  * with the amount of data that is being printed. Prevents the task using this
- * API from abusing system resources.
+ * API from abusing system resources. Also the print task might not even get to
+ * print right away because it might get preempted.
  */
 #define PRINT_DELAY_BASE (PRINT_QUEUE_LENGTH / 5)
 
