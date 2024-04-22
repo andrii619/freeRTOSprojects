@@ -121,6 +121,7 @@ void printManagerInit(PrintManager *printer, UART_HandleTypeDef *huartHandle) {
 
   printer->printQueue = xQueueCreate(PRINT_QUEUE_LENGTH, sizeof(uint8_t));
   assert_param(printer->printQueue != NULL);
+  configASSERT(printer->printQueue != NULL);
 
   printer->printQueueMutex = xSemaphoreCreateMutex();
   assert_param(printer->printQueueMutex != NULL);

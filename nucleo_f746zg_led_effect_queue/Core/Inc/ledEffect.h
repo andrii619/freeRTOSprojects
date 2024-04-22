@@ -9,10 +9,15 @@
 
 #include <appCommon.h>
 
+#include <timers.h>
+
 typedef struct {
   TaskHandle_t ledEffectTaskHandle;
   StackType_t ledEffectTaskStack[STACK_SIZE];
   StaticTask_t ledEffectTaskTCB;
+
+  // software timer for LED effect timing
+  TimerHandle_t ledTimer;
 
 } LEDEffect;
 
