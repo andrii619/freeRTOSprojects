@@ -1,6 +1,8 @@
 #ifndef __PRINT_MANAGER_H
 #define __PRINT_MANAGER_H
 
+#include "stm32f7xx_hal.h"
+
 #include <appCommon.h>
 
 #include <math.h>

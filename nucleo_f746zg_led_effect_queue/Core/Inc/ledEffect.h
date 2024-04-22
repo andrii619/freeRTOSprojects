@@ -6,8 +6,9 @@
 // #include <SEGGER_SYSVIEW.h>
 
 // #include <task.h>
-
+#include "stm32f7xx_hal.h"
 #include <appCommon.h>
+#include <main.h>
 
 #include <timers.h>
 
