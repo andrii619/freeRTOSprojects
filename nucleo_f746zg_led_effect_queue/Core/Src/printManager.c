@@ -64,6 +64,35 @@ size_t printMessage(PrintManager const *const printer,
   return printedChars;
 }
 
+size_t printMessageFromISR(PrintManager const *const printer,
+                           uint8_t const *const buffer,
+                           size_t const bufferLength) {
+
+  // assert_param(isPrinterInitialized(printer) == pdTRUE);
+
+  size_t printedChars = 0;
+  BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+  xSemaphoreTakeFromISR(printer->printQueueMutex, &xHigherPriorityTaskWoken);
+  for (; printedChars < bufferLength; printedChars++) {
+    if (!xQueueIsQueueFullFromISR(printer->printQueue)) {
+      xQueueSendToBackFromISR(printer->printQueue, &buffer[printedChars],
+                              &xHigherPriorityTaskWoken);
+    } else {
+      break;
+    }
+  }
+  xSemaphoreGiveFromISR(printer->printQueueMutex, &xHigherPriorityTaskWoken);
+
+  // give signal that there is something for the print task to print
+  if (printedChars > 0) {
+    xSemaphoreGiveFromISR(printer->readyForPrintSignal,
+                          &xHigherPriorityTaskWoken);
+  }
+
+  return printedChars;
+}
+
 void printMessageBlocking(PrintManager const *const printer,
                           uint8_t const *const buffer,
                           size_t const bufferLength) {

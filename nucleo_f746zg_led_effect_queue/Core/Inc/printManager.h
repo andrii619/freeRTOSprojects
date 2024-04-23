@@ -71,6 +71,9 @@ void printManagerInit(PrintManager *printer, UART_HandleTypeDef *uartHandle);
 size_t printMessage(PrintManager const *const printer,
                     uint8_t const *const buffer, size_t bufferLength);
 
+size_t printMessageFromISR(PrintManager const *const printer,
+                    uint8_t const *const buffer, size_t bufferLength);
+
 /**
  * @brief
  *

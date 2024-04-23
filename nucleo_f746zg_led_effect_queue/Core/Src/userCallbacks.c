@@ -79,3 +79,21 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
    */
   SEGGER_SYSVIEW_PrintfHost("UART Error Callback");
 }
+
+
+/**
+  * @brief  EXTI line detection callbacks.
+  * @param  GPIO_Pin Specifies the pins connected EXTI line
+  * @retval None
+  */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  /* Prevent unused argument(s) compilation warning */
+  //UNUSED(GPIO_Pin);
+  SEGGER_SYSVIEW_PrintfHost("GPIO_EXTI_Callback %d", GPIO_Pin);
+  printMessageFromISR(&printer, (uint8_t *)"BUTTON!", 7);
+  
+  /* NOTE: This function Should not be modified, when the callback is needed,
+           the HAL_GPIO_EXTI_Callback could be implemented in the user file
+   */
+}

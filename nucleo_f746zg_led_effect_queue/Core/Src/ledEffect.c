@@ -33,7 +33,7 @@ static void LEDTask(void *argument) {
     SEGGER_SYSVIEW_PrintfHost("led iter %d", ledItenationNum++);
     printMessageBlocking(&printer, (uint8_t *)ledMenuMsg, msgLen);
     LEDEffect2();
-    vTaskDelay(pdMS_TO_TICKS(500));
+    vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
 
