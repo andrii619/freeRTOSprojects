@@ -10,8 +10,10 @@
 static char const *const ledMenuMsg = "XXXXXXXXX\r\n";
 extern PrintManager printer;
 
-static void LEDEffect1(void);
-static void LEDEffect2(void);
+static void LEDEffectAll(void);
+static void LEDEffectEven(void);
+static void LEDEffectOdd(void);
+static void LEDEffectEvenOdd(void);
 
 static void ledTurnOffAll(void);
 static void ledTurnOnAll(void);
@@ -32,7 +34,23 @@ static void LEDTask(void *argument) {
 
     SEGGER_SYSVIEW_PrintfHost("led iter %d", ledItenationNum++);
     printMessageBlocking(&printer, (uint8_t *)ledMenuMsg, msgLen);
-    LEDEffect2();
+    //LEDEffect2();
+    //ledTurnOffAll();
+    switch(LEDController->led_mode) {
+      case(LED_EFFECT_CMD_ALL): {
+        LEDEffectAll();
+      }; break;
+      case(LED_EFFECT_CMD_EVEN): {
+        LEDEffectEven();
+      }; break;
+      case(LED_EFFECT_CMD_ODD): {
+        LEDEffectOdd();
+      }; break;
+      case(LED_EFFECT_CMD_EVEN_ODD): {
+        LEDEffectEvenOdd();
+      }; break;
+      default: ledTurnOffAll();
+    };
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
@@ -43,6 +61,8 @@ void ledEffectInit(LEDEffect *LEDController) {
       LED_EFFECT_TASK_PRIORITY, LEDController->ledEffectTaskStack,
       &(LEDController->ledEffectTaskTCB));
   assert_param(LEDController->ledEffectTaskHandle != NULL);
+  
+  LEDController->led_mode = LED_EFFECT_CMD_OFF;
 }
 
 BaseType_t isLedEffectInitialized(LEDEffect *LEDController) {
@@ -52,16 +72,26 @@ BaseType_t isLedEffectInitialized(LEDEffect *LEDController) {
   return pdTRUE;
 }
 
-static void LEDEffect1(void) {
+static void LEDEffectAll(void) {
   static int flag = 1;
   (flag ^= 1) ? ledTurnOffAll() : ledTurnOnAll();
 }
 
-int moew1(void) { return 1; }
-int meow2(void) { return 2; }
-
-static void LEDEffect2(void) {
+static void LEDEffectEven(void) {
   static int flag = 1;
+  ledTurnOffAll();
+  (flag ^= 1) ? ledTurnOffEven() : ledTurnOnEven();
+}
+
+static void LEDEffectOdd(void) {
+  static int flag = 1;
+  ledTurnOffAll();
+  (flag ^= 1) ? ledTurnOffOdd() : ledTurnOnOdd();
+}
+
+static void LEDEffectEvenOdd(void) {
+  static int flag = 1;
+  ledTurnOffAll();
   flag ^= 1;
   if (flag) {
     ledTurnOnOdd();

@@ -46,12 +46,12 @@ typedef enum {
 } mainMenuCmd;
 
 typedef enum {
-  LED_EFFECT_CMD_ONE = (1 << 0),
-  LED_EFFECT_CMD_TWO = (1 << 1),
-  LED_EFFECT_CMD_THREE = (1 << 2),
-  LED_EFFECT_CMD_FOUR = (1 << 3),
-  LED_EFFECT_CMD_BAD_CMD = (1 << 31),
-} ledEffectCmd;
+  LED_EFFECT_CMD_OFF = 0,
+  LED_EFFECT_CMD_ALL,
+  LED_EFFECT_CMD_EVEN,
+  LED_EFFECT_CMD_ODD,
+  LED_EFFECT_CMD_EVEN_ODD,
+} LedEffectCmd;
 
 typedef enum {
   RTC_MENU_CMD_ONE = (1 << 0),

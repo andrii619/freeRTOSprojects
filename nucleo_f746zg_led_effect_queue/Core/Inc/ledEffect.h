@@ -18,6 +18,7 @@ typedef struct {
   StaticTask_t ledEffectTaskTCB;
 
   // software timer for LED effect timing
+  LedEffectCmd led_mode;
   TimerHandle_t ledTimer;
 
 } LEDEffect;

@@ -1,6 +1,7 @@
 
 #include <userCallbacks.h>
 
+#include <ledEffect.h>
 #include <printManager.h>
 
 #include <ctype.h>
@@ -9,6 +10,7 @@
 uint8_t uartRxData;
 
 extern PrintManager printer;
+extern LEDEffect ledController;
 
 /**
  * @brief  Rx Transfer completed callback.
@@ -80,19 +82,21 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
   SEGGER_SYSVIEW_PrintfHost("UART Error Callback");
 }
 
-
 /**
-  * @brief  EXTI line detection callbacks.
-  * @param  GPIO_Pin Specifies the pins connected EXTI line
-  * @retval None
-  */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
+ * @brief  EXTI line detection callbacks.
+ * @param  GPIO_Pin Specifies the pins connected EXTI line
+ * @retval None
+ */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   /* Prevent unused argument(s) compilation warning */
-  //UNUSED(GPIO_Pin);
+  // UNUSED(GPIO_Pin);
   SEGGER_SYSVIEW_PrintfHost("GPIO_EXTI_Callback %d", GPIO_Pin);
   printMessageFromISR(&printer, (uint8_t *)"BUTTON!", 7);
-  
+  ledController.led_mode++;
+  if (ledController.led_mode > LED_EFFECT_CMD_EVEN_ODD) {
+    ledController.led_mode = LED_EFFECT_CMD_OFF;
+  }
+
   /* NOTE: This function Should not be modified, when the callback is needed,
            the HAL_GPIO_EXTI_Callback could be implemented in the user file
    */
