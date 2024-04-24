@@ -1,6 +1,6 @@
 #include <commandParser.h>
 
-void CommandParseTask(void *argument) {
+static void CommandParseTask(void *argument) {
   SEGGER_SYSVIEW_PrintfHost("Command task running");
   //   uint8_t userCommand[30];
   //   BaseType_t notificationValue = pdFALSE;
@@ -99,9 +99,24 @@ void CommandParseTask(void *argument) {
   //     //else case should not happen
   // 	}
   while (1) {
+    SEGGER_SYSVIEW_PrintfHost("Command task running");
+    vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
 
-void commandParserInit(CommandParser *parser) {}
+void commandParserInit(CommandParser *parser) {
+
+  assert_param(parser);
+
+  parser->inputDataQueue =
+      xQueueCreate(INPUT_DATA_QUEUE_LENGTH, sizeof(uint8_t));
+  assert_param(parser->inputDataQueue);
+
+  parser->commandParserTaskHandle = xTaskCreateStatic(
+      CommandParseTask, COMMAND_PARSER_TASK_NAME, STACK_SIZE, (void *)parser,
+      COMMAND_PARSER_TASK_PRIORITY, parser->CommandParseTaskStack,
+      &(parser->CommandParseTaskTCB));
+  assert_param(parser->commandParserTaskHandle);
+};
 
 BaseType_t isCommandParserInitialized(CommandParser *) { return pdFALSE; };

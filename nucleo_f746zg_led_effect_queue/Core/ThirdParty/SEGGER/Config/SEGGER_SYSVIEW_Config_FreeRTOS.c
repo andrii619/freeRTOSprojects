@@ -86,7 +86,17 @@ extern const SEGGER_SYSVIEW_OS_API SYSVIEW_X_OS_TraceAPI;
 */
 static void _cbSendSystemDesc(void) {
   SEGGER_SYSVIEW_SendSysDesc("N="SYSVIEW_APP_NAME",D="SYSVIEW_DEVICE_NAME",O=FreeRTOS");
-  SEGGER_SYSVIEW_SendSysDesc("I#15=SysTick");
+  SEGGER_SYSVIEW_SendSysDesc("I#3=HardFault,"
+                              "I#4=MemManage,"
+                              "I#5=BusFault,"
+                              "I#6=UsageFault,"
+                              "I#11=SVC,"
+                              "I#12=DebugMon,"
+                              "I#14=PendSV,"
+                              "I#15=SysTick,"
+                              "I#46=TIM4,"
+                              "I#54=UART2,"
+                              "I#56=EXTI15_10");
 }
 
 /*********************************************************************

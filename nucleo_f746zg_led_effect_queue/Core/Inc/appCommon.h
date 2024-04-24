@@ -14,19 +14,19 @@
 #define MAX_RETRIES (10)
 
 #define LED_EFFECT_TASK_PRIORITY (tskIDLE_PRIORITY + 2)
-#define LED_EFFECT_TASK_NAME ("LEDTask")
+#define LED_EFFECT_TASK_NAME ("LEDEffect")
 
 #define MAIN_MENU_TASK_PRIORITY (tskIDLE_PRIORITY + 1)
-#define MAIN_MENU_TASK_NAME ("MenuTask")
+#define MAIN_MENU_TASK_NAME ("Menu")
 
 #define PRINT_MANAGER_TASK_PRIORITY (tskIDLE_PRIORITY + 1)
-#define PRINT_MANAGER_TASK_NAME ("PrinterTask")
+#define PRINT_MANAGER_TASK_NAME ("Printer")
 
 #define COMMAND_PARSER_TASK_PRIORITY (tskIDLE_PRIORITY + 1)
-#define COMMAND_PARSER_TASK_NAME ("CommandParserTask")
+#define COMMAND_PARSER_TASK_NAME ("CommandParser")
 
 #define RTC_CONFIG_TASK_PRIORITY (tskIDLE_PRIORITY + 1)
-#define RTC_CONFIG_TASK_NAME ("RTCConfigTask")
+#define RTC_CONFIG_TASK_NAME ("RTCConfig")
 
 typedef enum {
   sMainMenu = 0,

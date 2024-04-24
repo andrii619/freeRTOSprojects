@@ -131,7 +131,7 @@ g_pfnVectors:
   .word  NMI_Handler
   .word  HardFault_Handler
   .word  MemManage_Handler
-  .word  BusFault_Handler
+  .word  BusFault_Handler                     /* 5 */
   .word  UsageFault_Handler
   .word  0
   .word  0

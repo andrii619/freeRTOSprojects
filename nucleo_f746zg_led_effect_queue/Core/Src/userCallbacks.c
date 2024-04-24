@@ -3,6 +3,7 @@
 
 #include <ledEffect.h>
 #include <printManager.h>
+#include <commandParser.h>
 
 #include <ctype.h>
 #include <stdint.h>
@@ -11,6 +12,7 @@ uint8_t uartRxData;
 
 extern PrintManager printer;
 extern LEDEffect ledController;
+extern CommandParser parser;
 
 /**
  * @brief  Rx Transfer completed callback.
@@ -91,7 +93,12 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   /* Prevent unused argument(s) compilation warning */
   // UNUSED(GPIO_Pin);
   SEGGER_SYSVIEW_PrintfHost("GPIO_EXTI_Callback %d", GPIO_Pin);
-  printMessageFromISR(&printer, (uint8_t *)"BUTTON!", 7);
+  
+  /**
+   * @brief 
+   * to get a message printed from ISR maybe use a counting semaphore or a flag
+   */
+  
   ledController.led_mode++;
   if (ledController.led_mode > LED_EFFECT_CMD_EVEN_ODD) {
     ledController.led_mode = LED_EFFECT_CMD_OFF;
