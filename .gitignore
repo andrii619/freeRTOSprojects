@@ -1,2 +1,4 @@
 nucleo_f746zg_led_effect_queue/Debug/
 nucleo_f746zg_led_effect_queue/systemview_rec/
+
+led_effect_server/esp32_led_effect/node_modules

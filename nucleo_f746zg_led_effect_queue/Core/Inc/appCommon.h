@@ -61,6 +61,19 @@ typedef enum {
   RTC_MENU_CMD_BAD_CMD = (1 << 31),
 } rtcMenuCmd;
 
+// create command data structure
+typedef struct {
+  
+  // to be allocated and freed by the user
+  char *userCommand;
+  
+  // array of command arguments. also to be freed by the user
+  char **arguments;
+  int argumentCount;
+  
+} user_command_s;
+
+
 extern app_state_t appState;
 
 #endif //__APP_COMMON_H

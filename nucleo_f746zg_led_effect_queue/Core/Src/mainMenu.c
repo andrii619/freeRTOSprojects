@@ -14,28 +14,13 @@ static void MenuTask(void *argument) {
 
   assert_param(isMainMenuInitialized(menu) == pdTRUE);
 
-  // print our menu
-  //  if(appState == sMainMenu){
-  //    xSemaphoreTake(printQueueMutex, portMAX_DELAY);
-  //    for(size_t i =0; i<strlen(mainMenuMsg);i++){
-  //      if(uxQueueSpacesAvailable(printQueue)!=0){
-  //        xQueueSendToBack(printQueue, &mainMenuMsg[i], portMAX_DELAY);
-  //      }
-  //      else{
-  //        break;
-  //      }
-  //    }
-  //    //xQueueSendToBack(printQueue, mainMenuMsg, portMAX_DELAY);
-  //    xSemaphoreGive(printQueueMutex);
-  //  }
-
   size_t msgLen = strlen(mainMenuMsg);
   uint8_t menuItenationNum = 0;
   while (1) {
 
     // printMessage(&printer, mainMenuMsg, msgLen);
     SEGGER_SYSVIEW_PrintfHost("Print main menu %d", menuItenationNum++);
-    printMessageBlocking(&printer, (uint8_t *)mainMenuMsg, msgLen);
+    //printMessageBlocking(&printer, (uint8_t *)mainMenuMsg, msgLen);
     //HAL_Delay(100); // wait 10ms
     vTaskDelay(pdMS_TO_TICKS(2000));
   }

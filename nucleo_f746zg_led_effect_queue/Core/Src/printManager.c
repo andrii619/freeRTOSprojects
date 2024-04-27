@@ -116,25 +116,24 @@ void printMessageBlocking(PrintManager const *const printer,
 }
 
 void printManagerInit(PrintManager *printer, UART_HandleTypeDef *huartHandle) {
-  assert_param(printer != NULL);
-  assert_param(huartHandle != NULL);
+  assert_param(printer);
+  assert_param(huartHandle);
   printer->huartHandle = huartHandle;
 
   printer->printQueue = xQueueCreate(PRINT_QUEUE_LENGTH, sizeof(uint8_t));
-  assert_param(printer->printQueue != NULL);
-  configASSERT(printer->printQueue != NULL);
+  assert_param(printer->printQueue);
 
   printer->printQueueMutex = xSemaphoreCreateMutex();
-  assert_param(printer->printQueueMutex != NULL);
+  assert_param(printer->printQueueMutex);
 
   printer->readyForPrintSignal = xSemaphoreCreateBinary();
-  assert_param(printer->readyForPrintSignal != NULL);
+  assert_param(printer->readyForPrintSignal);
 
   printer->printTaskHandle =
       xTaskCreateStatic(PrintTask, PRINT_MANAGER_TASK_NAME, STACK_SIZE,
                         (void *)printer, PRINT_MANAGER_TASK_PRIORITY,
                         printer->PrintTaskStack, &(printer->PrintTaskTCB));
-  assert_param(printer->printTaskHandle != NULL);
+  assert_param(printer->printTaskHandle);
 }
 
 BaseType_t isPrinterInitialized(PrintManager const *const printer) {

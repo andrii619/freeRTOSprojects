@@ -148,7 +148,7 @@ int main(void)
 
   mainMenuInit(&menu);
 
-  commandParserInit(&parser);
+  commandParserInit(&parser, &huart2);
 
   ledEffectInit(&ledController);
 
@@ -179,7 +179,7 @@ int main(void)
   appState = sMainMenu;
 
   // start the uart RX interrupt
-  /// HAL_UART_Receive_IT(&huart2, &uartRxData, sizeof(uint8_t));
+  commandParserStart(&parser);
 
   // start the scheduler - shouldn't return unless there's a problem
   vTaskStartScheduler();

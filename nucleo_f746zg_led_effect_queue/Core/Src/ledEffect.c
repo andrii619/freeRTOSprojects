@@ -33,7 +33,7 @@ static void LEDTask(void *argument) {
   while (1) {
 
     SEGGER_SYSVIEW_PrintfHost("led iter %d", ledItenationNum++);
-    printMessageBlocking(&printer, (uint8_t *)ledMenuMsg, msgLen);
+    //printMessageBlocking(&printer, (uint8_t *)ledMenuMsg, msgLen);
     //LEDEffect2();
     //ledTurnOffAll();
     switch(LEDController->led_mode) {
@@ -60,7 +60,7 @@ void ledEffectInit(LEDEffect *LEDController) {
       LEDTask, LED_EFFECT_TASK_NAME, STACK_SIZE, (void *)LEDController,
       LED_EFFECT_TASK_PRIORITY, LEDController->ledEffectTaskStack,
       &(LEDController->ledEffectTaskTCB));
-  assert_param(LEDController->ledEffectTaskHandle != NULL);
+  assert_param(LEDController->ledEffectTaskHandle);
   
   LEDController->led_mode = LED_EFFECT_CMD_OFF;
 }

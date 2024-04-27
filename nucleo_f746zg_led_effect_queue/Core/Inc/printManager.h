@@ -41,8 +41,8 @@ typedef struct {
   StaticTask_t PrintTaskTCB;
 
   QueueHandle_t printQueue;
-  SemaphoreHandle_t printQueueMutex;
-  SemaphoreHandle_t readyForPrintSignal;
+  SemaphoreHandle_t printQueueMutex;     // mutex
+  SemaphoreHandle_t readyForPrintSignal; // binary semaphore
 
   // pointer to uart handle that this printer manages
   UART_HandleTypeDef *huartHandle;
