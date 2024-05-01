@@ -1,0 +1,86 @@
+/* Existing Styles */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.dropdown {
+  margin-bottom: 20px;
+  padding: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.animationRedLED {
+  width: 100px;
+  height: 20px;
+  margin: 5px;
+  background-color: #ccc;
+  animation-name: redLEDAnimation;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+}
+
+/* New Animation Keyframes */
+@keyframes redLEDAnimation {
+  50% {
+    background-color: red;
+  }
+  100% {
+    background-color: #ccc;
+  }
+}
+
+
+.led {
+  width: 100px;
+  height: 20px;
+  margin: 5px;
+  border-radius: 1rem;
+  background-color: #ccc;
+}
+
+
+.animationBlueLED {
+
+
+  animation-name: blueLEDAnimation;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+
+}
+
+/* New Animation Keyframes */
+@keyframes blueLEDAnimation {
+  50% {
+    background-color: blue;
+    box-shadow: 0px 0px 10px 10px rgba(45,255,196,0.9);;
+  }
+  100% {
+    background-color: #ccc;
+  }
+}
+
+
+.animationGreenLED {
+  width: 100px;
+  height: 20px;
+  margin: 5px;
+  background-color: #ccc;
+  animation-name: greenLEDAnimation;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+}
+
+/* New Animation Keyframes */
+@keyframes greenLEDAnimation {
+  50% {
+    background-color: green;
+  }
+  100% {
+    background-color: #ccc;
+  }
+}
+
