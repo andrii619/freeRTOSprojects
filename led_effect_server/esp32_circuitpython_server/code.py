@@ -2,8 +2,8 @@ import microcontroller
 import socketpool
 import wifi
 
-from adafruit_httpserver import Server, Request, Response, JSONResponse, GET, POST, PUT, DELETE
-from adafruit_httpserver import Status
+from adafruit_httpserver import Server, Request, Response, JSONResponse, GET, POST, PUT, DELETE, OPTIONS
+from adafruit_httpserver import Status, Headers
 
 
 import binascii
@@ -37,8 +37,9 @@ printWifiInfo()
 pool = socketpool.SocketPool(wifi.radio)
 server = Server(pool, debug=True)
 
-ledModes = ["ON", "OFF"]
-ledMode = "OFF"
+#ledModes = ["ON", "OFF", "EVEN", ]
+ledModes = ['ALL_OFF','BLINK_ALL','BLINK_EVEN','BLINK_ODD','ALTERNATE']
+ledMode = "ALL_OFF"
 
 objects = [
     {"id": 1, "name": "Andrii is a schmeckle","ledModes": ledModes,"currentLEDMode":ledMode},
@@ -50,11 +51,15 @@ ledObject ={"id": 1, "name": "Andrii is a schmeckle","ledModes": ledModes,"curre
 
 
 # (Optional) Allow cross-origin requests.
-server.headers = {
+headers = {
     "Access-Control-Allow-Origin": "*",
+    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Allow': 'POST, GET, OPTIONS'
 }
+server.headers = headers
 
-led_modes = ["OFF", "ALL", "EVEN", "ODD", "EVEN/ODD"]
+##led_modes = ["OFF", "ALL", "EVEN", "ODD", "EVEN/ODD"]
 
 
 @server.route("/cpu-information", append_slash=True)
@@ -123,7 +128,7 @@ def api(request: Request):
     return JSONResponse(request, {"message": "Something went wrong"})
 
 
-@server.route("/led-effect", [GET, POST, PUT], append_slash=True)
+@server.route("/led-effect", [GET, POST, PUT, OPTIONS], append_slash=True)
 def api(request: Request):
     ##global ledMode
     """
@@ -131,6 +136,10 @@ def api(request: Request):
     """
     
     # Get objects
+    if request.method == OPTIONS:
+        print("Options request")
+        return Response(request, status=Status(204,""), headers=Headers(headers), body='')
+    
     if request.method == GET:
         return JSONResponse(request, ledObject)
     
@@ -167,6 +176,7 @@ def api(request: Request):
         # # If not found, add it
         # objects.append(uploaded_object)
         return Response(request, status=Status(200,"OK"))
+        #return HTTPResponse(status=200, headers=headers, body='')
     
     # If we get here, something went wrong
     #return JSONResponse(request, {"message": "Something went wrong"})

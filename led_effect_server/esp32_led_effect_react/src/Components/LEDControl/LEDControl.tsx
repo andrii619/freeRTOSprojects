@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import axios from "axios";
 import { LEDState, LEDMode } from './types';
 import styles from './LEDControl.module.css';
 
@@ -8,7 +9,8 @@ const LEDControl: React.FC = () => {
 
   useEffect(() => {
     const fetchMode = async () => {
-      const response = await fetch('http://192.168.50.144/led-effect');
+      const response = await fetch('http://192.168.50.145:5000/led-effect');
+      console.log("Got response: ", response)
       const data: LEDState = await response.json();
       setCurrentMode(data.currentLEDMode as LEDMode);
     };
@@ -17,10 +19,19 @@ const LEDControl: React.FC = () => {
 
   const handleModeChange = async (newMode: LEDMode) => {
     setCurrentMode(newMode);
-    await fetch('http://192.168.168.144/led-effect/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({id: 1, currentLEDMode: newMode } as LEDState)
+    // await fetch('http://192.168.168.145:5000/led-effect', {
+    //   method: 'POST',
+    //   //headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify({id: 1, currentLEDMode: newMode } as LEDState)
+    // });
+    const currentData:LEDState = {id: 1, currentLEDMode: newMode } as LEDState;
+    const postHeaders = {
+      'Content-Type': 'application/json',
+      'Accept': '*/*',
+      'Connection': 'keep-alive'
+    }
+    axios.post("http://192.168.50.145:5000/led-effect", currentData, {headers: postHeaders}).then((response) => {
+      console.log(response.status, response.data.token);
     });
   };
 
@@ -28,44 +39,43 @@ const LEDControl: React.FC = () => {
     switch (currentMode) {
       case 'ALL_OFF': {
         return (<div>
-          <div className={`${styles.led}`}>meow</div>
-          <div className={`${styles.led}`}></div>
-          <div className={`${styles.led}`}></div>
+          <div className={`${styles.LEDPill} ${styles.offLED}`}>meow</div>
+          <div className={`${styles.LEDPill} ${styles.offLED}`}></div>
+          <div className={`${styles.LEDPill} ${styles.offLED}`}></div>
         </div>);
       }
       case 'BLINK_ALL':
         return (<div>
-          <div className={`${styles.led} ${styles.animationRedLED}`}>meow</div>
-          <div className={`${styles.led} ${styles.animationBlueLED}`}></div>
-          <div className={`${styles.led} ${styles.animationGreenLED}`}></div>
+          <div className={`${styles.LEDPill} ${styles.redLED}   ${styles.ledAnimation}`}>meow</div>
+          <div className={`${styles.LEDPill} ${styles.blueLED}  ${styles.ledAnimation}`}></div>
+          <div className={`${styles.LEDPill} ${styles.greenLED} ${styles.ledAnimation}`}></div>
         </div>);
       case 'BLINK_EVEN': {
         return (<div>
-          <div className={`${styles.led} ${styles.animationRedLED}`}></div>
-          <div className={`${styles.led}`}></div>
-          <div className={`${styles.led} ${styles.animationGreenLED}`}></div>
+          <div className={`${styles.LEDPill} ${styles.redLED}   ${styles.ledAnimation}`}></div>
+          <div className={`${styles.LEDPill} ${styles.offLED}   `}></div>
+          <div className={`${styles.LEDPill} ${styles.greenLED} ${styles.ledAnimation}`}></div>
         </div>);
       }
       case 'BLINK_ODD': {
         return (<div>
-          <div className={`${styles.led}`}></div>
-          <div className={`${styles.led} ${styles.animationBlueLED}`}></div>
-          <div className={`${styles.led}`}></div>
+          <div className={`${styles.LEDPill} ${styles.offLED}`}></div>
+          <div className={`${styles.LEDPill} ${styles.blueLED} ${styles.ledAnimation}`}></div>
+          <div className={`${styles.LEDPill} ${styles.offLED}`}></div>
         </div>);
       }
-      // case 'ALTERNATE':
-      //   return (
-      //     <div>
-      //       <div className={`${styles.animation}`} style={{animation: 'alternate 2s infinite'}}></div>
-      //       <div className={`${styles.animation}`} style={{animation: 'alternate 2s infinite', animationDelay: '1s'}}></div>
-      //       <div className={`${styles.animation}`} style={{animation: 'alternate 2s infinite'}}></div>
-      //     </div>
-      //   );
+      case 'ALTERNATE': {
+        return (<div>
+          <div className={`${styles.LEDPill} ${styles.redLED}`}></div>
+          <div className={`${styles.LEDPill} ${styles.blueLED}`}></div>
+          <div className={`${styles.LEDPill} ${styles.greenLED}`}></div>
+        </div>);
+      }
       default:
         return (<div>
-          <div className={`${styles.led}`}>meow</div>
-          <div className={`${styles.led}`}></div>
-          <div className={`${styles.led}`}></div>
+          <div className={`${styles.LEDPill} ${styles.offLED}`}>meow</div>
+          <div className={`${styles.LEDPill} ${styles.offLED}`}></div>
+          <div className={`${styles.LEDPill} ${styles.offLED}`}></div>
         </div>);
     }
   };
