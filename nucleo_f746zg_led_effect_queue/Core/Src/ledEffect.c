@@ -22,6 +22,8 @@ static void ledTurnOffEven(void);
 static void ledTurnOnOdd(void);
 static void ledTurnOffOdd(void);
 
+static LEDEffect *localLEDControllerRef;
+
 static void LEDTask(void *argument) {
 
   LEDEffect *LEDController = (LEDEffect *)argument;
@@ -29,31 +31,75 @@ static void LEDTask(void *argument) {
 
   size_t msgLen = strlen(ledMenuMsg);
   uint8_t ledItenationNum = 0;
+
+  xTimerStart(LEDController->ledTimer, portMAX_DELAY);
+
   SEGGER_SYSVIEW_PrintfHost("LED task running");
+
   while (1) {
 
     SEGGER_SYSVIEW_PrintfHost("led iter %d", ledItenationNum++);
-    //printMessageBlocking(&printer, (uint8_t *)ledMenuMsg, msgLen);
-    //LEDEffect2();
-    //ledTurnOffAll();
-    switch(LEDController->led_mode) {
-      case(LED_EFFECT_CMD_ALL): {
-        LEDEffectAll();
-      }; break;
-      case(LED_EFFECT_CMD_EVEN): {
-        LEDEffectEven();
-      }; break;
-      case(LED_EFFECT_CMD_ODD): {
-        LEDEffectOdd();
-      }; break;
-      case(LED_EFFECT_CMD_EVEN_ODD): {
-        LEDEffectEvenOdd();
-      }; break;
-      default: ledTurnOffAll();
-    };
+
+    /**
+     * @brief wait for a notification to process a command
+     *
+     */
+    // test led handle command
+    command_t testCmd = {0, NULL};
+    testCmd.arg_count = 1;
+    testCmd.args = pvPortMalloc(testCmd.arg_count * sizeof(char *));
+    if (testCmd.args == NULL) {
+      // Handle allocation failure (e.g., error logging and exit)
+    }
+    for (int i = 0; i < testCmd.arg_count; i++) {
+      testCmd.args[i] = pvPortMalloc(10 * sizeof(char));
+      if (testCmd.args[i] == NULL) {
+        // Handle allocation failure; Free previously allocated memory
+        for (int j = 0; j < i; j++) {
+          vPortFree(testCmd.args[j]);
+          testCmd.args[j] = NULL;
+        }
+        vPortFree(testCmd.args);
+        testCmd.args = NULL;
+        // Exit or error handling code
+      }
+      memset(testCmd.args[i], 0, 10);
+    }
+
+    // testCmd.args[0] = pvPortMalloc(10*sizeof(char));
+    // testCmd.args[1] = pvPortMalloc(10*sizeof(char));
+    // memset(testCmd.args[0], 0, (size_t)10);
+    // memset(testCmd.args[1], 0, (size_t)10);
+
+    strcpy(testCmd.args[0], "$LEDMODE");
+    //strcpy(testCmd.args[1], "ALL_ON");
+
+    handleCommand(testCmd);
+
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
+
+void vTimerCallback(TimerHandle_t xTimer) {
+  SEGGER_SYSVIEW_PrintfHost("Timer Callback");
+  assert_param(localLEDControllerRef);
+  switch (localLEDControllerRef->led_mode) {
+  case (LED_EFFECT_CMD_ALL): {
+    LEDEffectAll();
+  }; break;
+  case (LED_EFFECT_CMD_EVEN): {
+    LEDEffectEven();
+  }; break;
+  case (LED_EFFECT_CMD_ODD): {
+    LEDEffectOdd();
+  }; break;
+  case (LED_EFFECT_CMD_EVEN_ODD): {
+    LEDEffectEvenOdd();
+  }; break;
+  default:
+    ledTurnOffAll();
+  };
+};
 
 void ledEffectInit(LEDEffect *LEDController) {
   LEDController->ledEffectTaskHandle = xTaskCreateStatic(
@@ -61,8 +107,19 @@ void ledEffectInit(LEDEffect *LEDController) {
       LED_EFFECT_TASK_PRIORITY, LEDController->ledEffectTaskStack,
       &(LEDController->ledEffectTaskTCB));
   assert_param(LEDController->ledEffectTaskHandle);
-  
+
   LEDController->led_mode = LED_EFFECT_CMD_OFF;
+
+  // copy for local ref
+  localLEDControllerRef = LEDController;
+
+  LEDController->ledTimer =
+      xTimerCreate("led", pdMS_TO_TICKS(500), pdTRUE, NULL, vTimerCallback);
+  assert_param(LEDController->ledTimer);
+
+  LEDController->commandQueue =
+      xQueueCreate(COMMAND_QUEUE_LENGTH, sizeof(command_t));
+  assert_param(LEDController->commandQueue);
 }
 
 BaseType_t isLedEffectInitialized(LEDEffect *LEDController) {
@@ -70,6 +127,32 @@ BaseType_t isLedEffectInitialized(LEDEffect *LEDController) {
     return pdFALSE;
   }
   return pdTRUE;
+}
+
+void handleCommand(command_t cmd) {
+
+  // take the command and put it into a queue
+
+  assert_param(cmd.arg_count > 0);
+  for (int i = 0; i < cmd.arg_count; i++) {
+    assert_param(
+        cmd.args[i]); // check that each command string is not a null pointer
+  }
+  
+  if(strncmp(cmd.args[0], "$LEDMODE", 8)==0){
+    //print current LED mode
+    char const * msg = "LEDMODE:ALL_ON\r\n";
+    // reply
+    printMessageBlocking(&printer, (uint8_t *)msg, strlen(msg));
+  }
+
+  // free each command string
+  for (int i = 0; i < cmd.arg_count; i++) {
+    vPortFree(cmd.args[i]);
+    cmd.args[i] = NULL;
+  }
+  vPortFree(cmd.args);
+  cmd.args = NULL;
 }
 
 static void LEDEffectAll(void) {

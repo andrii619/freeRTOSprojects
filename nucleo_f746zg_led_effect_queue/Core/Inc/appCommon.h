@@ -74,6 +74,11 @@ typedef struct {
 } user_command_s;
 
 
+typedef struct {
+  int arg_count;
+  char** args;
+} command_t;
+
 extern app_state_t appState;
 
 #endif //__APP_COMMON_H

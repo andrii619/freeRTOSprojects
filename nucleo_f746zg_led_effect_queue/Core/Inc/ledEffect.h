@@ -12,19 +12,30 @@
 
 #include <timers.h>
 
+#define COMMAND_QUEUE_LENGTH (15)
+
+
 typedef struct {
   TaskHandle_t ledEffectTaskHandle;
   StackType_t ledEffectTaskStack[STACK_SIZE];
   StaticTask_t ledEffectTaskTCB;
 
   // software timer for LED effect timing
-  LedEffectCmd led_mode;
+  LedEffectCmd led_mode; // currently commanded LED mode
   TimerHandle_t ledTimer;
+  
+  //void (*ledTimerCallback)(TimerHandle_t xTimer);
+  
+  // command queue
+  QueueHandle_t commandQueue;
 
 } LEDEffect;
 
 void ledEffectInit(LEDEffect *);
 
 BaseType_t isLedEffectInitialized(LEDEffect *);
+
+
+void handleCommand(command_t cmd);
 
 #endif //__LED_EFFECT_H

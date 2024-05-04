@@ -6,7 +6,14 @@ from adafruit_httpserver import Server, Request, Response, JSONResponse, GET, PO
 from adafruit_httpserver import Status, Headers
 
 
+import board
+import busio
+import digitalio
+
 import binascii
+
+
+uart = busio.UART(tx=board.TX, rx=board.RX, baudrate=115200, bits=8, parity=None, stop=1, timeout=1, receiver_buffer_size=64)
 
 
 def format_mac_address(binary_mac):
@@ -141,6 +148,18 @@ def api(request: Request):
         return Response(request, status=Status(204,""), headers=Headers(headers), body='')
     
     if request.method == GET:
+        # pull latest data from the stm32 board using serial
+        try:
+            uart.write('?LEDMODE\r\n')
+            print("Querying stm32:?LEDMODE")
+            stm32_reply = uart.read(30)
+            print(f"stm32 reply:{stm32_reply}")
+            assert stm32_reply
+        except Exception as e:
+            print(f"Get exception: {e}")
+            return Response(request, status=Status(400, "Bad Request"))
+        # check if the reply is valid or we timed out
+        
         return JSONResponse(request, ledObject)
     
     # Upload or update objects
@@ -158,6 +177,15 @@ def api(request: Request):
                 'currentLEDMode' in uploaded_object and \
                     uploaded_object['currentLEDMode'] in ledModes else None
             assert newLEDMode
+            
+            uart.write(f'#LEDMODE={newLEDMode}\r\n')
+            print(f"Setting stm32:#LEDMODE={newLEDMode}")
+            stm32_reply = uart.read(30)
+            
+            print(f"stm32 reply:{stm32_reply}")
+            
+            # stm32 reply hould be LEDMODE:<LED_MODE>\r\n
+            
             ledObject['currentLEDMode'] = newLEDMode
             ##ledMode = newLEDMode
             

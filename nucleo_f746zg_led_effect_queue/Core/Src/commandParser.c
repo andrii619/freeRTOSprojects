@@ -142,13 +142,13 @@ static void CommandParseTask(void *argument) {
     // tokenize the commands by \r\n
     // trim the tokens of any whitespace characters
     for (int i = 0;; i++) {
-      token = strtok((char *)&userCommand, '\r\n');
+      token = strtok((char *)&userCommand, "\r\n");
 
       // trim whitespace
       token = trimnwhitespace(token, INPUT_DATA_QUEUE_LENGTH);
       //int commandLength = 
       
-      
+      //strcpy();
       // we can tokenize the command here into the command part and the arguments part
       
     }
