@@ -40,11 +40,21 @@ static void LEDTask(void *argument) {
 
     SEGGER_SYSVIEW_PrintfHost("led iter %d", ledItenationNum++);
 
+    // block until the command queue is not empty
+    // when reading an empty queue the task will be placed in blocked state
+    // we process one command on each iteration of the loop
+    command_t cmd = {0, NULL};
+    xQueueReceive(LEDController->commandQueue, &cmd, portMAX_DELAY);
     /**
      * @brief wait for a notification to process a command
      *
      */
     // test led handle command
+    assert_param(cmd.arg_count > 0 && cmd.args);
+    handleCommand(cmd);
+
+    /*
+    // testing command handling
     command_t testCmd = {0, NULL};
     testCmd.arg_count = 1;
     testCmd.args = pvPortMalloc(testCmd.arg_count * sizeof(char *));
@@ -65,16 +75,9 @@ static void LEDTask(void *argument) {
       }
       memset(testCmd.args[i], 0, 10);
     }
-
-    // testCmd.args[0] = pvPortMalloc(10*sizeof(char));
-    // testCmd.args[1] = pvPortMalloc(10*sizeof(char));
-    // memset(testCmd.args[0], 0, (size_t)10);
-    // memset(testCmd.args[1], 0, (size_t)10);
-
     strcpy(testCmd.args[0], "$LEDMODE");
-    //strcpy(testCmd.args[1], "ALL_ON");
-
     handleCommand(testCmd);
+    */
 
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
@@ -138,10 +141,10 @@ void handleCommand(command_t cmd) {
     assert_param(
         cmd.args[i]); // check that each command string is not a null pointer
   }
-  
-  if(strncmp(cmd.args[0], "$LEDMODE", 8)==0){
-    //print current LED mode
-    char const * msg = "LEDMODE:ALL_ON\r\n";
+
+  if (strncmp(cmd.args[0], "$LEDMODE", 8) == 0) {
+    // print current LED mode
+    char const *msg = "LEDMODE:ALL_ON\r\n";
     // reply
     printMessageBlocking(&printer, (uint8_t *)msg, strlen(msg));
   }

@@ -38,7 +38,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
   SEGGER_SYSVIEW_PrintfHost("Enqueue %c", (char)parser.uartRxData);
   if (xQueueIsQueueFullFromISR(parser.inputDataQueue) == pdFALSE) {
     xQueueSendToBackFromISR(parser.inputDataQueue, &parser.uartRxData, NULL);
-    if (parser.uartRxData == '\r') {
+    //if (parser.uartRxData == '\r' || parser.uartRxData == '\n') {
+    if (parser.uartRxData == '\n') {
       // notify the command parsing task that a command arrived
       SEGGER_SYSVIEW_PrintfHost("Notifycmd %d", parser.uartRxData);
       xTaskNotifyFromISR(parser.commandParserTaskHandle, (uint32_t)0, eNoAction,

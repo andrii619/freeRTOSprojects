@@ -183,6 +183,10 @@ int main(void)
 
   // start the scheduler - shouldn't return unless there's a problem
   vTaskStartScheduler();
+  
+  
+  
+  
   /* USER CODE END 2 */
 
   /* Infinite loop */

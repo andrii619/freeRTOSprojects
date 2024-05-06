@@ -186,7 +186,7 @@ void USART2_IRQHandler(void)
   /* USER CODE BEGIN USART2_IRQn 1 */
 
   //recieve the next data character
-  ///HAL_UART_Receive_IT(&huart2, &uartRxData, sizeof(uint8_t));
+  //HAL_UART_Receive_IT(&huart2, &uartRxData, sizeof(uint8_t));
 
   SEGGER_SYSVIEW_RecordExitISR();
   /* USER CODE END USART2_IRQn 1 */

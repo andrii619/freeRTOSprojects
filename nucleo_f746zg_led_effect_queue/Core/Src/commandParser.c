@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include <utils.h>
+#include <ledEffect.h>
 // 	while(1){
 
 // 		//wait to get notified that the uart queue holds a command to
@@ -96,6 +97,9 @@
 //     }
 //     //else case should not happen
 // 	}
+
+extern LEDEffect ledController;
+
 static void CommandParseTask(void *argument) {
   SEGGER_SYSVIEW_PrintfHost("Command task running");
   uint8_t userCommand[INPUT_DATA_QUEUE_LENGTH + 1];
@@ -106,6 +110,15 @@ static void CommandParseTask(void *argument) {
 
   CommandParser *parser = (CommandParser *)argument;
   BaseType_t notificationValue = pdFALSE;
+  
+  /**
+   * @brief Construct a new command Parser Start object
+   * NOTE: Cannot start the uart receive IT inside of main 
+   * probably because main ends its thread of execution when the schedulers starts so the
+   * interrupt cant really be invoked from main anymore
+   * so we need to start the uart IT RX process from here
+   */
+  commandParserStart(&parser);
 
   while (1) {
     SEGGER_SYSVIEW_PrintfHost("Command task running");
@@ -136,22 +149,36 @@ static void CommandParseTask(void *argument) {
         break;
       }
     }
-    // xQueueReset(parser->inputDataQueue);
-    /// xSemaphoreGive(parser->inputDataMutex);
+    //string guard
+    userCommand[currentBufferFillLevel] = '\0';
+    
+    // create a command struct
+    command_t cmd = {0, NULL};
+    // for now just pass the command as is
+    cmd.arg_count = 1;
+    cmd.args = pvPortMalloc(cmd.arg_count * sizeof(char *));
+    cmd.args[0] = pvPortMalloc(currentBufferFillLevel * sizeof(char));
+    strcpy(cmd.args[0], (char*)userCommand);
+    //size_t cmdSize = strlen();
+    
+    //put the command into the led command queue
+    // item is queued by copy
+    xQueueSendToBack(ledController.commandQueue, &cmd, portMAX_DELAY);
+    
 
     // tokenize the commands by \r\n
     // trim the tokens of any whitespace characters
-    for (int i = 0;; i++) {
-      token = strtok((char *)&userCommand, "\r\n");
+    // for (int i = 0;; i++) {
+    //   token = strtok((char *)&userCommand, "\r\n");
 
-      // trim whitespace
-      token = trimnwhitespace(token, INPUT_DATA_QUEUE_LENGTH);
-      //int commandLength = 
+    //   // trim whitespace
+    //   token = trimnwhitespace(token, INPUT_DATA_QUEUE_LENGTH);
+    //   //int commandLength = 
       
-      //strcpy();
-      // we can tokenize the command here into the command part and the arguments part
+    //   //strcpy();
+    //   // we can tokenize the command here into the command part and the arguments part
       
-    }
+    // }
 
     currentBufferFillLevel = 0;
 
@@ -186,6 +213,7 @@ BaseType_t commandParserStart(CommandParser *const parser) {
   HAL_StatusTypeDef pass = HAL_UART_Receive_IT(
       parser->huartHandle, &parser->uartRxData, sizeof(uint8_t));
   if (pass != HAL_OK) {
+    SEGGER_SYSVIEW_PrintfHost("Cmd parser failed to start uart");
     return pdFAIL;
   }
   return pdPASS;
