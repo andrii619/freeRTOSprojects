@@ -3,6 +3,9 @@
 #include <string.h>
 #include <utils.h>
 #include <ledEffect.h>
+
+static BaseType_t commandParserStart(CommandParser *const parser);
+
 // 	while(1){
 
 // 		//wait to get notified that the uart queue holds a command to
@@ -106,7 +109,7 @@ static void CommandParseTask(void *argument) {
   userCommand[INPUT_DATA_QUEUE_LENGTH] =
       '\0'; // safeguard for some string methods like strlen
   size_t currentBufferFillLevel = 0;
-  char *token;
+  //char *token;
 
   CommandParser *parser = (CommandParser *)argument;
   BaseType_t notificationValue = pdFALSE;
@@ -118,7 +121,7 @@ static void CommandParseTask(void *argument) {
    * interrupt cant really be invoked from main anymore
    * so we need to start the uart IT RX process from here
    */
-  commandParserStart(&parser);
+  commandParserStart(parser);
 
   while (1) {
     SEGGER_SYSVIEW_PrintfHost("Command task running");

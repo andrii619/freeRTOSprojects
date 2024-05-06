@@ -29,7 +29,7 @@ static void LEDTask(void *argument) {
   LEDEffect *LEDController = (LEDEffect *)argument;
   assert_param(isLedEffectInitialized(LEDController) == pdTRUE);
 
-  size_t msgLen = strlen(ledMenuMsg);
+  //size_t msgLen = strlen(ledMenuMsg);
   uint8_t ledItenationNum = 0;
 
   xTimerStart(LEDController->ledTimer, portMAX_DELAY);

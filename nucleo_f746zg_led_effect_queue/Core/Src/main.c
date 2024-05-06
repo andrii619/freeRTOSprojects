@@ -40,45 +40,12 @@
 /* USER CODE BEGIN PD */
 ///#define DWT_CTRL (*(volatile uint32_t*)0xE0001000)
 
-// the address of Task2Handle is passed to xTaskCreate.
-// this global variable will be used by Task3 to delete BlueTask.
-
 MainMenu menu;
 PrintManager printer;
 CommandParser parser;
 LEDEffect ledController;
 
 app_state_t appState = sMainMenu;
-
-/**
- * holds UART data. The UART interrupt gets data and puts it into this queue.
- * When the interrupt recieves the \n character it notifies
- * the commandParsingTask. Then the commandParsingTask empties and process the
- * command.
- */
-// QueueHandle_t inputDataQueue; // holds UART input data
-
-// some common variables to use for each task
-// 128 * 4 = 512 bytes
-//(recommended min stack size per task)
-//#define STACK_SIZE 128
-
-// define stack and task control block (TCB) for the red task
-
-// static StackType_t MenuTaskStack[STACK_SIZE];
-// static StaticTask_t MenuTaskTCB;
-
-// static StackType_t LEDTaskStack[STACK_SIZE];
-// static StaticTask_t LEDTaskTCB;
-
-// static StackType_t RTCTaskStack[STACK_SIZE];
-// static StaticTask_t RTCTaskTCB;
-
-// static StackType_t PrintTaskStack[STACK_SIZE];
-// static StaticTask_t PrintTaskTCB;
-
-// static StackType_t CommandParseTaskStack[STACK_SIZE];
-// static StaticTask_t CommandParseTaskTCB;
 
 /* USER CODE END PD */
 
@@ -152,41 +119,11 @@ int main(void)
 
   ledEffectInit(&ledController);
 
-  // inputDataQueue = xQueueCreate(20, sizeof(uint8_t));
-
-  // printQueueMutex = xSemaphoreCreateMutex();
-
-  // xTaskCreateStatic returns task hanlde
-  // always passes since memory was statically allocated
-  //  menuTaskHandle = xTaskCreateStatic(MenuTask, "MenuTask", STACK_SIZE, NULL,
-  //    					tskIDLE_PRIORITY + 1,
-  //    					MenuTaskStack, &MenuTaskTCB);
-
-  // ledTaskHandle = xTaskCreateStatic(LEDTask, "LEDTask", STACK_SIZE, NULL,
-  //     					tskIDLE_PRIORITY + 1,
-  //     					LEDTaskStack, &LEDTaskTCB);
-
-  // rtcTaskHandle = xTaskCreateStatic(RTCTask, "RTCTask", STACK_SIZE, NULL,
-  //       					tskIDLE_PRIORITY + 1,
-  //       					RTCTaskStack, &RTCTaskTCB);
-
-  // commandParseTaskHandle = xTaskCreateStatic(CommandParseTask,
-  // "CommandParseTask", 	  	  STACK_SIZE, NULL,
-  // tskIDLE_PRIORITY
-  // + 1, 		  CommandParseTaskStack, &CommandParseTaskTCB);
-
   // set initial app state to main menu
   appState = sMainMenu;
 
-  // start the uart RX interrupt
-  commandParserStart(&parser);
-
   // start the scheduler - shouldn't return unless there's a problem
   vTaskStartScheduler();
-  
-  
-  
-  
   /* USER CODE END 2 */
 
   /* Infinite loop */
