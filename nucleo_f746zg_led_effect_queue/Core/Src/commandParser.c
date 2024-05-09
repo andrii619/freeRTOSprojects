@@ -6,6 +6,14 @@
 
 static BaseType_t commandParserStart(CommandParser *const parser);
 
+/**
+ * @brief Construct a new parse Command object
+ * 
+ * @param cmd - pointer to a command_t data structure
+ * @param buffer - pointer to a string
+ */
+static void parseCommand(command_t *cmd, char * buffer);
+
 // 	while(1){
 
 // 		//wait to get notified that the uart queue holds a command to
@@ -123,13 +131,24 @@ static void CommandParseTask(void *argument) {
    */
   commandParserStart(parser);
 
+  BaseType_t reEnableUartNeeded = pdFALSE;
+
   while (1) {
     SEGGER_SYSVIEW_PrintfHost("Command task running");
+    
+    reEnableUartNeeded = pdFALSE;
+    
     notificationValue = xTaskNotifyWait(0, 0, NULL,
                                         portMAX_DELAY); // wait indefinitely
     if (notificationValue == pdFALSE) {
       continue;
     }
+    
+    if(uxQueueSpacesAvailable(parser->inputDataQueue) == 0){
+     //
+     reEnableUartNeeded = pdTRUE;
+    }
+    
 
     // if(uxQueueSpacesAvailable()==0){
     //   SEGGER_SYSVIEW_PrintfHost("");
@@ -157,6 +176,10 @@ static void CommandParseTask(void *argument) {
     
     // create a command struct
     command_t cmd = {0, NULL};
+    
+    // parse the input string into a command
+    parseCommand(&cmd, (char*)userCommand);
+    
     // for now just pass the command as is
     cmd.arg_count = 1;
     cmd.args = pvPortMalloc(cmd.arg_count * sizeof(char *));
@@ -184,6 +207,12 @@ static void CommandParseTask(void *argument) {
     // }
 
     currentBufferFillLevel = 0;
+    
+    if(reEnableUartNeeded){
+      // uart reception was disabled because the parser input queue was full
+      // re-enable the uart RX process
+      HAL_UART_Receive_IT(parser->huartHandle, &parser->uartRxData, sizeof(uint8_t));
+    }
 
     // send them one by one to the relevant task
 
@@ -222,3 +251,35 @@ BaseType_t commandParserStart(CommandParser *const parser) {
   return pdPASS;
 }
 
+
+
+
+void parseCommand(command_t *cmd, char * buffer) {
+  assert_param(cmd && buffer);
+  
+  /**
+   * @brief 
+   * 1) tokenize the buffer based on space characters
+   * 2) check of we have at least one token
+   * 3) assume that the command is valid. its not our job to check validity
+   * 4) put the command and arguments into the struct
+   */
+  //char *token;
+  
+  
+}
+
+void freeCommandResources(command_t *cmd) {
+  assert_param(cmd && cmd->arg_count > 0 && cmd->args);
+    // free each command string
+  for (int i = 0; i < cmd->arg_count; i++) {
+    if(cmd->args[i]){
+      vPortFree(cmd->args[i]);
+      cmd->args[i] = NULL;
+    }
+  }
+  if(cmd->args){
+    vPortFree(cmd->args);
+    cmd->args = NULL;
+  }
+}

@@ -1,6 +1,7 @@
 #include <utils.h>
 
 char *trimnwhitespace(char *str, size_t n) {
+  //assert_param(str && n>0);
   char *end;
 
   // Trim leading space

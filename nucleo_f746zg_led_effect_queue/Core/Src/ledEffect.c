@@ -7,7 +7,7 @@
 // static char const *const ledMenuMsg = "LED Menu:\r\na:Led OFF\r\nb:LED"
 //                                       "Sequential\r\nc : Exit\r\n ";
 
-static char const *const ledMenuMsg = "XXXXXXXXX\r\n";
+//static char const *const ledMenuMsg = "XXXXXXXXX\r\n";
 extern PrintManager printer;
 
 static void LEDEffectAll(void);
@@ -24,13 +24,22 @@ static void ledTurnOffOdd(void);
 
 static LEDEffect *localLEDControllerRef;
 
+/**
+ * @brief Handle the command and free all resources used by cmd
+ * 
+ * @param cmd 
+ */
+static void handleCommand(command_t *cmd);
+//static void freeCommand(command_t *cmd);
+
 static void LEDTask(void *argument) {
 
   LEDEffect *LEDController = (LEDEffect *)argument;
   assert_param(isLedEffectInitialized(LEDController) == pdTRUE);
 
-  //size_t msgLen = strlen(ledMenuMsg);
+  // size_t msgLen = strlen(ledMenuMsg);
   uint8_t ledItenationNum = 0;
+  command_t cmd = {0, NULL};
 
   xTimerStart(LEDController->ledTimer, portMAX_DELAY);
 
@@ -43,15 +52,16 @@ static void LEDTask(void *argument) {
     // block until the command queue is not empty
     // when reading an empty queue the task will be placed in blocked state
     // we process one command on each iteration of the loop
-    command_t cmd = {0, NULL};
+    cmd.arg_count = 0;
+    cmd.args = NULL;
     xQueueReceive(LEDController->commandQueue, &cmd, portMAX_DELAY);
     /**
      * @brief wait for a notification to process a command
      *
      */
     // test led handle command
-    assert_param(cmd.arg_count > 0 && cmd.args);
-    handleCommand(cmd);
+    assert_param(cmd.arg_count > 0 && cmd.args && cmd.args[0]);
+    handleCommand(&cmd);
 
     /*
     // testing command handling
@@ -79,7 +89,7 @@ static void LEDTask(void *argument) {
     handleCommand(testCmd);
     */
 
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    /// vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
 
@@ -132,17 +142,17 @@ BaseType_t isLedEffectInitialized(LEDEffect *LEDController) {
   return pdTRUE;
 }
 
-void handleCommand(command_t cmd) {
+void handleCommand(command_t *cmd) {
 
   // take the command and put it into a queue
 
-  assert_param(cmd.arg_count > 0);
-  for (int i = 0; i < cmd.arg_count; i++) {
+  assert_param(cmd->arg_count > 0);
+  for (int i = 0; i < cmd->arg_count; i++) {
     assert_param(
-        cmd.args[i]); // check that each command string is not a null pointer
+        cmd->args[i]); // check that each command string is not a null pointer
   }
 
-  if (strncmp(cmd.args[0], "$LEDMODE", 8) == 0) {
+  if (strncmp(cmd->args[0], "$LEDMODE", 8) == 0) {
     // print current LED mode
     char const *msg = "LEDMODE:ALL_ON\r\n";
     // reply
@@ -150,12 +160,12 @@ void handleCommand(command_t cmd) {
   }
 
   // free each command string
-  for (int i = 0; i < cmd.arg_count; i++) {
-    vPortFree(cmd.args[i]);
-    cmd.args[i] = NULL;
+  for (int i = 0; i < cmd->arg_count; i++) {
+    vPortFree(cmd->args[i]);
+    cmd->args[i] = NULL;
   }
-  vPortFree(cmd.args);
-  cmd.args = NULL;
+  vPortFree(cmd->args);
+  cmd->args = NULL;
 }
 
 static void LEDEffectAll(void) {

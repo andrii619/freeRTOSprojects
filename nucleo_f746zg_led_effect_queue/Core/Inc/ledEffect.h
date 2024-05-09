@@ -35,7 +35,4 @@ void ledEffectInit(LEDEffect *);
 
 BaseType_t isLedEffectInitialized(LEDEffect *);
 
-
-void handleCommand(command_t cmd);
-
 #endif //__LED_EFFECT_H

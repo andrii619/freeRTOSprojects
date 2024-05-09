@@ -3,8 +3,8 @@
 
 #include <printManager.h>
 
-static char *mainMenuMsg =
-    "Main Menu:\r\n0:Led Menu\r\n1:Rtc Menu\r\n2:Exit\r\n";
+//static char *mainMenuMsg =
+//    "Main Menu:\r\n0:Led Menu\r\n1:Rtc Menu\r\n2:Exit\r\n";
 extern PrintManager printer;
 
 static void MenuTask(void *argument) {
@@ -14,7 +14,7 @@ static void MenuTask(void *argument) {
 
   assert_param(isMainMenuInitialized(menu) == pdTRUE);
 
-  size_t msgLen = strlen(mainMenuMsg);
+  //size_t msgLen = strlen(mainMenuMsg);
   uint8_t menuItenationNum = 0;
   while (1) {
 
