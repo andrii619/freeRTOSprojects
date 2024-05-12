@@ -95,7 +95,7 @@ void printMessageBlocking(PrintManager const *const printer,
              PRINT_QUEUE_LENGTH) {
 
         expBackoffDelay =
-            delayBase * ((BaseType_t)powf(2.0f, numberOfSendRetries));
+            delayBase * ((BaseType_t)powf(2.0F, numberOfSendRetries));
         //  HAL_Delay(expBackoffDelay); // wait 10ms
         SEGGER_SYSVIEW_PrintfHost("Backoff: %d", expBackoffDelay);
         vTaskDelay(pdMS_TO_TICKS(expBackoffDelay));

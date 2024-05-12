@@ -184,7 +184,7 @@ static void CommandParseTask(void *argument) {
     cmd.arg_count = 1;
     cmd.args = pvPortMalloc(cmd.arg_count * sizeof(char *));
     cmd.args[0] = pvPortMalloc(currentBufferFillLevel * sizeof(char));
-    strcpy(cmd.args[0], (char*)userCommand);
+    strncpy(cmd.args[0], (char*)userCommand, currentBufferFillLevel);
     //size_t cmdSize = strlen();
     
     //put the command into the led command queue
@@ -238,7 +238,10 @@ void commandParserInit(CommandParser *parser, UART_HandleTypeDef *uartHandle) {
   parser->huartHandle = uartHandle;
 };
 
-BaseType_t isCommandParserInitialized(CommandParser *) { return pdFALSE; };
+BaseType_t isCommandParserInitialized(CommandParser *parser) { 
+  UNUSED(parser);
+  return pdFALSE;
+  };
 
 BaseType_t commandParserStart(CommandParser *const parser) {
   assert_param(parser);

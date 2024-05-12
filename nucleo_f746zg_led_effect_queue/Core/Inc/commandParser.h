@@ -40,7 +40,7 @@ typedef struct {
  */
 void commandParserInit(CommandParser *parser, UART_HandleTypeDef *uartHandle);
 
-BaseType_t isCommandParserInitialized(CommandParser *);
+BaseType_t isCommandParserInitialized(CommandParser *parser);
 
 ///BaseType_t commandParserStart(CommandParser *const parser);
 

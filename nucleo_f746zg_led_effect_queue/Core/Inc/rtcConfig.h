@@ -4,6 +4,8 @@
 
 #include <appCommon.h>
 
+#include "stm32f7xx_hal.h"
+
 void RTCTask(void *argument);
 
 TaskHandle_t rtcTaskHandle;

@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "cstring": "c",
-        "segger_sysview.h": "c"
+        "segger_sysview.h": "c",
+        "stdint.h": "c",
+        "errno.h": "c"
     }
 }
